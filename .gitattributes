@@ -1,0 +1,6 @@
+# Ignorar estadísticas de Blade (las vistas de Laravel)
+*.blade.php linguist-vendored
+
+# Ignorar archivos de configuración y json
+*.json linguist-vendored
+*.lock linguist-vendored
