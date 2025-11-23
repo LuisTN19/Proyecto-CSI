@@ -3,7 +3,9 @@ import 'package:http/http.dart' as http; // El teléfono
 
 class LoginService {
 
-  static String? usuarioLogueado; // Para guardar el nombre
+  //static String? usuarioLogueado; // Para guardar el nombre
+  static Map<String, dynamic>? usuarioLogueado;
+
 
   // LA IP MÁGICA DEL EMULADOR (Apunta a tu PC)
   final String _baseUrl = 'http://10.0.2.2:8000/api';
@@ -53,7 +55,7 @@ class LoginService {
 
       if (respuesta.statusCode == 200) {
         final datos = jsonDecode(respuesta.body);
-        usuarioLogueado = datos['usuario']['name'];
+        usuarioLogueado = datos['usuario'];
         return true;
       } else {
         return false;
@@ -114,7 +116,7 @@ class LoginService {
 
       if (respuesta.statusCode == 201) { // 201 = Creado con éxito
         final datos = jsonDecode(respuesta.body);
-        usuarioLogueado = datos['usuario']['name'];
+        usuarioLogueado = datos['usuario'];
         return true;
       } else {
         // Si falla, imprimimos por qué

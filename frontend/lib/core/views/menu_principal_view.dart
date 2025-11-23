@@ -7,6 +7,8 @@ import '../../domains/comidas/comidas_view.dart';
 import '../../domains/agenda/agenda_view.dart';
 import 'login_view.dart';
 import 'perfil_view.dart';
+import '../services/login_service.dart';
+
 
 class MenuPrincipal extends StatelessWidget {
   const MenuPrincipal({super.key});
@@ -17,19 +19,23 @@ class MenuPrincipal extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Mi Gestor Personal'),                                //TÍTULO
         actions: [
-          IconButton(                                                           //PERFIL
-            icon: const Icon(Icons.person_outline),
+          IconButton(
+            icon: const Icon(Icons.person_outline, size: 30, color: Colors.white),
             onPressed: () {
-              bool usuarioEstaLogueado = false;
 
-              if (usuarioEstaLogueado) {
-                //SI ESTÁ LOGUEADO -> PERFIL
+              // --- LÓGICA REAL ---
+              // Preguntamos al servicio si hay datos guardados
+              if (LoginService.usuarioLogueado != null) {
+
+                // SI HAY ALGUIEN -> Vamos al Perfil
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const PerfilView()),
                 );
+
               } else {
-                // SI NO ESTÁ LOGUEADO -> LOGIN
+
+                // SI NO HAY NADIE -> Vamos al Login
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginView()),

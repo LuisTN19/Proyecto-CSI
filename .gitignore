@@ -1,0 +1,13 @@
+# --- BASURA DEL SISTEMA OPERATIVO ---
+.DS_Store
+Thumbs.db
+
+# --- BASURA DE LOS IDEs (Android Studio y VS Code) ---
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+
+# --- ARCHIVOS DE LOGS ---
+*.log
