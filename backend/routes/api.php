@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
+use App\Http\Controllers\HabitoController;
 
 // 1. REGISTRO
 Route::post('/registro', function (Request $request) {
@@ -36,7 +37,12 @@ Route::post('/login', function (Request $request) {
 
 
 
-
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
+
+
+Route::get('/habitos', [HabitoController::class, 'index']);       
+Route::post('/habitos', [HabitoController::class, 'store']);      
+Route::put('/habitos/{id}', [HabitoController::class, 'update']);
+Route::delete('/habitos/{id}', [HabitoController::class, 'destroy']);
