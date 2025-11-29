@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/menu_inferior_widget.dart';
 import 'habitos_card_widget.dart';
+
 import 'habitos_service.dart';
+
+
 
 class HabitosView extends StatefulWidget {
   const HabitosView({super.key});
@@ -10,57 +14,156 @@ class HabitosView extends StatefulWidget {
 }
 
 
-//------------------------------------------------------------------------------
-
-
 class _HabitosViewState extends State<HabitosView> {
 
-  // --- 1. VARIABLES DINÁMICAS (Se llenan desde Laravel) ---
   List<Map<String, dynamic>> listaPorHacer = [];
   List<Map<String, dynamic>> listaCompletados = [];
-  bool cargando = true;
 
-  // --- 2. EL SERVICIO (El cerebro) ---
   final _service = HabitosService();
 
-  // --- 3. CARGA INICIAL ---
+  Set<int> seleccionados = {};
+  bool get haySeleccion => seleccionados.isNotEmpty;
+
   @override
   void initState() {
     super.initState();
-    _cargarDatos(); // Pedimos los datos al entrar
+    _cargarDatos();
   }
 
-  // Función para traer datos de la BD
   void _cargarDatos() async {
-    final todos = await _service.getHabitos();
-
+    final data = await _service.getHabitos();
     if (mounted) {
       setState(() {
-        // Filtramos: los que tienen completado: false van a una lista, los true a otra
-        listaPorHacer = todos.where((h) => h['completado'] == false).toList();
-        listaCompletados = todos.where((h) => h['completado'] == true).toList();
-        cargando = false;
+        listaPorHacer = data.where((h) => h['completado'] == false).toList();
+        listaCompletados = data.where((h) => h['completado'] == true).toList();
       });
     }
   }
 
-  // Función del TIC (Mover)
-  void _alPulsarHabito(int id, bool estadoActual) async {
-    // Llamamos al backend para cambiar el estado
-    await _service.toggleCompletado(id, estadoActual);
-    _cargarDatos(); // Recargamos para ver el cambio
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: MenuInferiorWidget(
+
+        colorTema: Colors.red,
+        accionMas: haySeleccion ? null : _abrirVentanaCrear,
+
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+
+          title: haySeleccion
+              ? Text("${seleccionados.length} seleccionados", style: const TextStyle(color: Colors.white))
+              : null,
+
+          actions: haySeleccion
+              ? [
+            IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: _borrarSeleccionados),
+            IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => setState(() => seleccionados.clear())),
+          ]
+              : [],
+
+          bottom: haySeleccion ? null : const TabBar(
+            labelColor: Colors.red,
+            indicatorColor: Colors.red,
+            unselectedLabelColor: Colors.white70, // Un poco más claro
+            labelStyle: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+            // ---------------------------------------
+            tabs: [
+              Tab(text: 'Por Hacer'),
+              Tab(text: 'Completados'),
+            ],
+          ),
+        ),
+
+        body: TabBarView(
+          physics: haySeleccion ? const NeverScrollableScrollPhysics() : null,
+          children: [
+
+            // LISTA 1
+            ListView.builder(
+              itemCount: listaPorHacer.length,
+              itemBuilder: (context, index) {
+                final item = listaPorHacer[index];
+                return HabitosCardWidget(
+                  habito: item['nombre'],
+                  esta_completado: false,
+                  al_pulsar_check: () => _marcarCheck(item['id'], false),
+                  es_seleccionado: seleccionados.contains(item['id']),
+                  al_pulsar_largo: () => _multiseleccion(item['id']),
+                );
+              },
+            ),
+
+            // LISTA 2
+            ListView.builder(
+              itemCount: listaCompletados.length,
+              itemBuilder: (context, index) {
+                final item = listaCompletados[index];
+                return HabitosCardWidget(
+                  habito: item['nombre'],
+                  esta_completado: true,
+                  al_pulsar_check: () => _marcarCheck(item['id'], true),
+                  es_seleccionado: seleccionados.contains(item['id']),
+                  al_pulsar_largo: () => _multiseleccion(item['id']),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  // Función AÑADIR
-  void _crearNuevoHabito(String nombre) async {
-    await _service.agregarHabito(nombre);
-    _cargarDatos(); // Recargamos
+
+
+  void _marcarCheck(int id, bool estado) async {
+    await _service.putHabito(id, estado);
+    _cargarDatos();
   }
 
-  // Ventana flotante
+
+
+  void _multiseleccion(int id) {
+    setState(() {
+      if (seleccionados.contains(id)) {
+        seleccionados.remove(id);
+      } else {
+        seleccionados.add(id);
+      }
+    });
+  }
+  void _borrarSeleccionados() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("¿Borrar?"),
+        content: Text("Eliminar ${seleccionados.length} hábitos."),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              for (int id in seleccionados) await _service.deleteHabito(id);
+              setState(() => seleccionados.clear());
+              _cargarDatos();
+            },
+            child: const Text("Borrar", style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+
+  void _crearHabito(String nombre) async {
+    await _service.postHabito(nombre);
+    _cargarDatos();
+  }
   void _abrirVentanaCrear() {
     String nuevoTexto = "";
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -83,7 +186,7 @@ class _HabitosViewState extends State<HabitosView> {
               ElevatedButton(
                 onPressed: () {
                   if (nuevoTexto.isNotEmpty) {
-                    _crearNuevoHabito(nuevoTexto);
+                    _crearHabito(nuevoTexto);
                     Navigator.pop(context);
                   }
                 },
@@ -97,109 +200,4 @@ class _HabitosViewState extends State<HabitosView> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return DefaultTabController(length: 2,
-        child: Scaffold(
-
-          //....................................................................
-          appBar: AppBar(
-            automaticallyImplyLeading: false, //sin flechita
-            bottom: const TabBar(
-                labelColor: Colors.red,
-                indicatorColor: Colors.red,
-                labelStyle: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
-                tabs: [
-                  Tab(text: 'Por Hacer'),
-                  Tab(text: 'Completados'),
-                ]
-            ),
-          ),
-          //....................................................................
-
-
-          //....................................................................
-          body: TabBarView(
-            children: [
-
-              ListView.builder(                                                 //PESTAÑA: Por Hacer
-                itemCount: listaPorHacer.length, // Usamos la lista dinámica
-                itemBuilder: (context, index) {
-                  final item = listaPorHacer[index]; // Cogemos el mapa entero (id, nombre, color...)
-
-                  return HabitosCardWidget(
-                    habito: item['nombre'], // Sacamos el nombre
-                    esta_completado: false,
-
-                    al_pulsar_check: () {
-                      // Pasamos el ID real de la base de datos
-                      _alPulsarHabito(item['id'], false);
-                    },
-                  );
-                },
-              ),
-
-
-              ListView.builder(                                                 //PESTAÑA: Completados
-                itemCount: listaCompletados.length,
-                itemBuilder: (context, index) {
-                  final item = listaCompletados[index];
-
-                  return HabitosCardWidget(
-                    habito: item['nombre'],
-                    esta_completado: true,
-
-                    al_pulsar_check: () {
-                      // Pasamos el ID real
-                      _alPulsarHabito(item['id'], true);
-                    },
-                  );
-                },
-              ),
-            ],
-          ),
-          //....................................................................
-
-
-          //....................................................................
-          floatingActionButton: FloatingActionButton(
-            onPressed: _abrirVentanaCrear,
-            backgroundColor: Colors.red,
-            child: const Icon(Icons.add, color: Colors.white),                  //BOTÓN +
-          ),
-
-          //para que se ponga en el centro:
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-         //.....................................................................
-
-
-          //....................................................................
-          bottomNavigationBar: BottomAppBar(
-
-            shape: const CircularNotchedRectangle(), //la muesca
-
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(                                                     //BOTÓN CASITA
-                  icon: const Icon(Icons.home, size: 30),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-
-                const SizedBox(width: 48),
-
-                IconButton(                                                     //BOTÓN PERFIL
-                  icon: const Icon(Icons.person_outline, size: 30),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ),
-          //....................................................................
-
-        )
-    );
-  }
 }

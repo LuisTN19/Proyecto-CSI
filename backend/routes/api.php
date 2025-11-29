@@ -2,47 +2,26 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
+
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HabitoController;
 
-// 1. REGISTRO
-Route::post('/registro', function (Request $request) {
-    $request->validate([
-        'name' => 'required',
-        'email' => 'required|email|unique:users',
-        'password' => 'required|min:4',
-    ]);
+//RUTAS PÚBLICAS
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/registro', [AuthController::class, 'register']);
 
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-    ]);
 
-    return response()->json(['exito' => true, 'usuario' => $user], 201);
+//RUTAS PRIVADAS (Necesitan Token)
+//Sanctum es el motor que hay debajo funcionando para que los Tokens existan y funcionen, PAQUETE que venía con laravel ya
+Route::middleware('auth:sanctum')->group(function () {  //si abres esta ruta me tienes que enseñar la llave
+    
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
+    Route::get('/habitos', [HabitoController::class, 'index']);
+    Route::post('/habitos', [HabitoController::class, 'store']);
+    Route::put('/habitos/{id}', [HabitoController::class, 'update']);
+    Route::delete('/habitos/{id}', [HabitoController::class, 'destroy']);
+
 });
-
-// 2. LOGIN
-Route::post('/login', function (Request $request) {
-    $credentials = $request->only('email', 'password');
-
-    if (Auth::attempt($credentials)) {
-        return response()->json(['exito' => true, 'usuario' => Auth::user()], 200);
-    }
-
-    return response()->json(['exito' => false, 'mensaje' => 'Error'], 401);
-});
-
-
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
-
-Route::get('/habitos', [HabitoController::class, 'index']);       
-Route::post('/habitos', [HabitoController::class, 'store']);      
-Route::put('/habitos/{id}', [HabitoController::class, 'update']);
-Route::delete('/habitos/{id}', [HabitoController::class, 'destroy']);

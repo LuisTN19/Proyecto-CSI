@@ -1,134 +1,73 @@
-import 'dart:convert'; // Para entender el JSON de Laravel
-import 'package:http/http.dart' as http; // El teléfono
+import 'package:http/http.dart' as http;  //el teléfono para llamar a laravel
+import 'dart:convert'; //para traducir el JSON
+
 
 class LoginService {
 
-  //static String? usuarioLogueado; // Para guardar el nombre
-  static Map<String, dynamic>? usuarioLogueado;
+//static para que el Token y el Usuario sean Memoria Global y no se borren al cambiar de pantalla
+  static Map<String, dynamic>? usuarioLogueado; //caja vacía -> metemos todo lo que Laravel te ha enviado dentro de la variable usuario, Laravel envía esto: { "id": 1, "name": "Admin", "email": "a@a.com", "created_at": "..." }
+  static String? apiToken;
 
+  final String _baseUrl = 'http://10.0.2.2:8000/api';  //laravel en localhost del PC(servidor) pero llamandolo desde el emulador, a la zona de la api (comunicacion frontend-backend)
+                                                        //si usara localhost estaria llamando a laravel desde el propio emulador(no tengo el servidor aqui (xampp))
 
-  // LA IP MÁGICA DEL EMULADOR (Apunta a tu PC)
-  final String _baseUrl = 'http://10.0.2.2:8000/api';
-
-  // --- FUNCIÓN DE LOGIN REAL ---
-  /*Future<bool> validar(String email, String password) async {
+ //LOGIN
+  Future<bool> login(String email, String password) async {
     try {
-      // 1. Llamamos a Laravel
       final respuesta = await http.post(
         Uri.parse('$_baseUrl/login'),
-        body: {
-          'email': email,
-          'password': password
-        },
+        body: {'email': email, 'password': password},
+        headers: {'Accept': 'application/json'},
       );
 
-      // 2. Comprobamos la respuesta
-      if (respuesta.statusCode == 200) {
-        // Si es 200 (OK), leemos el nombre del usuario
-        final datos = jsonDecode(respuesta.body);
-        usuarioLogueado = datos['usuario']['name'];
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      print("Error de conexión: $e");
-      return false;
-    }
-  }*/
-  Future<bool> validar(String email, String password) async {
-    try {
-      print("--- INTENTANDO LOGIN ---");
-      print("1. URL: $_baseUrl/login");
-      print("2. Datos: $email / $password");
-
-      final respuesta = await http.post(
-        Uri.parse('$_baseUrl/login'),
-        body: {
-          'email': email,
-          'password': password
-        }
-      );
-      
-      print("3. Respuesta del Servidor: ${respuesta.statusCode}");
-      print("4. Cuerpo: ${respuesta.body}");
+      //LARAVEL en API.PHP FABRICA EL TOKEN y lo devuelve en JSON
 
       if (respuesta.statusCode == 200) {
         final datos = jsonDecode(respuesta.body);
+
         usuarioLogueado = datos['usuario'];
+
+        apiToken = datos['token'];
+
+        print("Token guardado: $apiToken");
         return true;
       } else {
         return false;
       }
     } catch (e) {
-      print("!!! ERROR CRÍTICO DE CONEXIÓN !!!");
-      print(e); // Esto nos dirá si es culpa del emulador
+      print("Error: $e");
       return false;
     }
   }
 
-  // --- FUNCIÓN DE REGISTRO REAL ---
-  /*Future<bool> registrar(String nombre, String email, String password) async {
-    try {
-      final respuesta = await http.post(
-        Uri.parse('$_baseUrl/registro'),
-        body: {
-          'name': nombre,
-          'email': email,
-          'password': password
-        },
-      );
-
-      if (respuesta.statusCode == 201) { // 201 = Creado
-        final datos = jsonDecode(respuesta.body);
-        usuarioLogueado = datos['usuario']['name'];
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      print("Error de conexión: $e");
-      return false;
-    }
-  }*/
-
-// --- FUNCIÓN DE REGISTRO CON DEPURACIÓN ---
+  // REGISTRO
   Future<bool> registrar(String nombre, String email, String password) async {
     try {
-      print("--- INTENTANDO REGISTRO ---");
-      print("1. Enviando a: $_baseUrl/registro");
-
       final respuesta = await http.post(
         Uri.parse('$_baseUrl/registro'),
-        // ¡IMPORTANTE! Le decimos a Laravel que queremos JSON, no HTML
-        headers: {
-          'Accept': 'application/json',
-        },
-        body: {
-          'name': nombre, // Ojo: en Laravel pusimos 'name', aquí debe coincidir
-          'email': email,
-          'password': password
-        },
+        headers: {'Accept': 'application/json'},
+        body: {'name': nombre, 'email': email, 'password': password},
       );
 
-      print("2. Código de Respuesta: ${respuesta.statusCode}");
-      print("3. Mensaje del Servidor: ${respuesta.body}");
-
-      if (respuesta.statusCode == 201) { // 201 = Creado con éxito
+      if (respuesta.statusCode == 201 || respuesta.statusCode == 200) {
         final datos = jsonDecode(respuesta.body);
+
         usuarioLogueado = datos['usuario'];
+        apiToken = datos['token'];
+
         return true;
       } else {
-        // Si falla, imprimimos por qué
-        print("!!! ERROR EN EL REGISTRO !!!");
         return false;
       }
     } catch (e) {
-      print("!!! ERROR DE CONEXIÓN !!!: $e");
+      print("Error: $e");
       return false;
     }
   }
-
-
 }
+
+
+
+
+
 

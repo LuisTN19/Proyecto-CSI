@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../widgets/fondo_degradado_scaffold.dart';
+
 import '../services/login_service.dart';
-import 'menu_principal_view.dart'; // <-- Importamos el Menú
+
+import '../views/login_view.dart';
 
 class PerfilView extends StatelessWidget {
   const PerfilView({super.key});
@@ -47,19 +49,24 @@ class PerfilView extends StatelessWidget {
                 backgroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
               ),
-              onPressed: () {
-                // 1. Borramos la memoria
-                LoginService.usuarioLogueado = null;
+                onPressed: () {
+                  // 1. Borramos el usuario
+                  LoginService.usuarioLogueado = null;
 
-                // 2. ¡VOLVEMOS AL MENÚ PRINCIPAL! (No al login)
+                  // 2. ¡BORRAMOS LA LLAVE TAMBIÉN! (IMPORTANTE)
+                  LoginService.apiToken = null;
+
+
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => const MenuPrincipal()),
+                  MaterialPageRoute(builder: (context) => const LoginView()),
                       (route) => false, // Borra el historial para que no puedas volver al perfil con "atrás"
                 );
               },
               child: const Text("Cerrar Sesión", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
             ),
+
+
           ],
         ),
       ),

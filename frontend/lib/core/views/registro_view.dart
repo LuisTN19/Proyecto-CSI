@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import '../widgets/fondo_degradado_scaffold.dart';
-import '../services/login_service.dart';
+import '../widgets/campo_texto_widget.dart';
+
 import 'menu_principal_view.dart';
+
+import '../services/login_service.dart';
+
 
 class RegistroView extends StatefulWidget {
   const RegistroView({super.key});
@@ -19,6 +23,7 @@ class _RegistroViewState extends State<RegistroView> {
 
   String mensaje_de_error = "";
 
+
   void _registrarse() async {
     String nombre = _nombreController.text;
     String email = _emailController.text;
@@ -29,7 +34,6 @@ class _RegistroViewState extends State<RegistroView> {
       setState(() { mensaje_de_error = "Por favor, rellena todos los campos"; });
       return;
     }
-
     if (pass1 != pass2) {
       setState(() { mensaje_de_error = "Las contraseñas no coinciden"; });
       return;
@@ -50,6 +54,7 @@ class _RegistroViewState extends State<RegistroView> {
       setState(() { mensaje_de_error = "Error al registrar usuario"; });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -72,13 +77,13 @@ class _RegistroViewState extends State<RegistroView> {
               const Text("Crear Cuenta", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 40),
 
-              _CampoTexto(controller: _nombreController, label: "Nombre", icon: Icons.person),
+              CampoTextoWidget(controller: _nombreController, label: "Nombre", icon: Icons.person),
               const SizedBox(height: 16),
-              _CampoTexto(controller: _emailController, label: "Correo Electrónico", icon: Icons.email),
+              CampoTextoWidget(controller: _emailController, label: "Correo Electrónico", icon: Icons.email),
               const SizedBox(height: 16),
-              _CampoTexto(controller: _passwordController, label: "Contraseña", icon: Icons.lock, esSecreto: true),
+              CampoTextoWidget(controller: _passwordController, label: "Contraseña", icon: Icons.lock, esSecreto: true),
               const SizedBox(height: 16),
-              _CampoTexto(controller: _confirmPasswordController, label: "Confirmar Contraseña", icon: Icons.lock_outline, esSecreto: true),
+              CampoTextoWidget(controller: _confirmPasswordController, label: "Confirmar Contraseña", icon: Icons.lock_outline, esSecreto: true),
 
               const SizedBox(height: 40),
 
@@ -108,32 +113,6 @@ class _RegistroViewState extends State<RegistroView> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-// Widget privado para los inputs (para ahorrar espacio)
-class _CampoTexto extends StatelessWidget {
-  final TextEditingController controller;
-  final String label;
-  final IconData icon;
-  final bool esSecreto;
-
-  const _CampoTexto({required this.controller, required this.label, required this.icon, this.esSecreto = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      obscureText: esSecreto,
-      style: const TextStyle(color: Colors.white),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        prefixIcon: Icon(icon, color: Colors.white70),
-        enabledBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.white70), borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(borderSide: const BorderSide(color: Colors.white, width: 2), borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

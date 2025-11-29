@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tugestor/core/views/login_view.dart';
 import 'core/views/menu_principal_view.dart';
 
 void main() {
@@ -21,7 +22,7 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
 
-      home: const MenuPrincipal(), //Primera pantalla que importamos
+      home: const LoginView(), //Primera pantalla que importamos
     );
   }
 }

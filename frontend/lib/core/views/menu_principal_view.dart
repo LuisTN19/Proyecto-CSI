@@ -5,9 +5,7 @@ import '../../domains/finanzas/finanzas_view.dart';
 import '../../domains/habitos/habitos_view.dart';
 import '../../domains/comidas/comidas_view.dart';
 import '../../domains/agenda/agenda_view.dart';
-import 'login_view.dart';
 import 'perfil_view.dart';
-import '../services/login_service.dart';
 
 
 class MenuPrincipal extends StatelessWidget {
@@ -22,25 +20,10 @@ class MenuPrincipal extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.person_outline, size: 30, color: Colors.white),
             onPressed: () {
-
-              // --- LÓGICA REAL ---
-              // Preguntamos al servicio si hay datos guardados
-              if (LoginService.usuarioLogueado != null) {
-
-                // SI HAY ALGUIEN -> Vamos al Perfil
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PerfilView()),
-                );
-
-              } else {
-
-                // SI NO HAY NADIE -> Vamos al Login
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginView()),
-                );
-              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PerfilView()),
+              );
             },
           ),
         ],
