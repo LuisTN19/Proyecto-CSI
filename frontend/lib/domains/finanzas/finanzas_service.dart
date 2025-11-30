@@ -4,48 +4,49 @@ import 'dart:convert';
 import '../../../core/services/login_service.dart';
 // Asegúrate de que tienes tus modelos Categoria y Movimiento si los usas
 
-class FinanzasService {
+class FinanzasService { // 💡 Cambiamos el nombre a MovimientoService
 
-  // Base URL para las rutas de la API de Laravel
-  final String _baseUrl = 'http://10.0.2.2:8000/api';
+  // 💡 Ruta API para Movimientos
+  final String _baseUrl = 'http://10.0.2.2:8000/api/movimientos';
 
-  // --- FUNCIÓN DE AUTENTICACIÓN ---
+  // 💡 Mantiene la misma lógica de token
   Map<String, String> _token() {
     return {
       'Accept': 'application/json',
+      // ¡Importante!: Content-Type para enviar JSON/Formulario
+      'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': 'Bearer ${LoginService.apiToken}',
     };
   }
 
-  // --------------------------------------------------------------------------
-  // 1. OBTENER MOVIMIENTOS (GET /api/movimientos)
-  // --------------------------------------------------------------------------
-
+  // --- 1. GET (OBTENER MOVIMIENTOS) ---------------------------------------------------------------------
   Future<List<Map<String, dynamic>>> getMovimientos() async {
     try {
-      final url = Uri.parse('$_baseUrl/movimientos');
       final respuesta = await http.get(
-        url,
+        Uri.parse(_baseUrl),
         headers: _token(),
       );
 
       if (respuesta.statusCode == 200) {
+        // El backend devuelve directamente la lista de movimientos
         List<dynamic> datos = jsonDecode(respuesta.body);
 
-        // Mapeo básico de los campos requeridos
+        // Mapeamos los datos para asegurar los tipos y la estructura deseada
         return datos.map((item) {
           return {
             'id': item['id'],
             'nombre': item['nombre'],
-            // Convertimos la cantidad a double de forma segura
-            'cantidad': (item['cantidad'] as num).toDouble(),
+            // Convertimos la cantidad de String/int a double
+            'cantidad': (item['cantidad'] is String) ? double.parse(item['cantidad']) : item['cantidad'].toDouble(),
+            // La fecha ya viene como string 'YYYY-MM-DD' de Laravel, que es lo que espera MovimientoCardWidget.
             'fecha': item['fecha'],
-            'esGasto': item['es_gasto'] as bool,
+            // Laravel devuelve 0/1 o true/false para booleanos.
+            'esGasto': item['es_gasto'] == 1 || item['es_gasto'] == true,
           };
         }).toList().cast<Map<String, dynamic>>();
 
       } else {
-        print("Error ${respuesta.statusCode} al obtener movimientos.");
+        print("Error ${respuesta.statusCode}: No autorizado o fallo al cargar movimientos");
         return [];
       }
     } catch (e) {
@@ -54,40 +55,30 @@ class FinanzasService {
     }
   }
 
-
-  // --------------------------------------------------------------------------
-  // 2. CREAR MOVIMIENTO (POST /api/movimientos)
-  // --------------------------------------------------------------------------
-
-  Future<bool> postMovimiento({
-    required String nombre,
-    required double cantidad,
-    required bool esGasto,
-    required String fecha, // Formato 'YYYY-MM-DD'
-    int? categoriaId, // Opcional (Siempre será null por ahora)
-  }) async {
+  // --- 2. POST (CREAR MOVIMIENTO) --------------------------------------------------------------------
+  Future<bool> postMovimiento(String nombre, double cantidad, String fecha, bool esGasto) async {
     try {
-      // Body de la petición: solo los campos esenciales
-      final Map<String, dynamic> body = {
-        'nombre': nombre,
-        // Enviar como string con 2 decimales para Laravel
-        'cantidad': cantidad.toStringAsFixed(2),
-        // Enviar booleanos como string '1' o '0' para la validación de Laravel
-        'es_gasto': esGasto ? '1' : '0',
-        'fecha': fecha,
-      };
-
-      final Map<String, String> headers = _token();
-      headers['Content-Type'] = 'application/x-www-form-urlencoded';
-
-      final url = Uri.parse('$_baseUrl/movimientos');
       final respuesta = await http.post(
-        url,
+        Uri.parse(_baseUrl),
         headers: _token(),
-        body: body,
+        // 💡 Datos a enviar al endpoint POST /movimientos
+        body: {
+          'nombre': nombre,
+          // La cantidad la enviamos como String para el backend
+          'cantidad': cantidad.toStringAsFixed(2),
+          // La fecha debe ser 'YYYY-MM-DD' para Laravel. Asumo que ya la formateaste en Flutter.
+          'fecha': fecha,
+          // Convertimos el booleano a String '1' o '0' para el formulario URL-encoded
+          'es_gasto': esGasto ? '1' : '0',
+        },
       );
 
-      // La respuesta 201 Created indica éxito
+      print('Respuesta del servidor (POST): ${respuesta.statusCode}');
+      if (respuesta.statusCode != 201) {
+        print('Cuerpo del error: ${respuesta.body}');
+      }
+
+      // El backend devuelve 201 Created si tuvo éxito
       return respuesta.statusCode == 201;
 
     } catch (e) {
@@ -95,5 +86,4 @@ class FinanzasService {
       return false;
     }
   }
-
 }

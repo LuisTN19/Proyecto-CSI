@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HabitoController;
 use App\Http\Controllers\EventoController;
+use App\Http\Controllers\MovimientoController;
 
 //RUTAS PÚBLICAS
 Route::post('/login', [AuthController::class, 'login']);
@@ -27,5 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {  //si abres esta ruta me 
 
     Route::get('/eventos', [EventoController::class, 'index']);
     Route::post('/eventos', [EventoController::class, 'store']);
+
+    Route::get('/movimientos', [MovimientoController::class, 'index']);
+    Route::post('/movimientos', [MovimientoController::class, 'store']);
 
 });

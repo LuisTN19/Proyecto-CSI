@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart'; // paquete para convertir el formaro d ela fecha q recibimos de laravel en un formato amigable
 
 class MovimientoCardWidget extends StatelessWidget {
 
   final String nombre;
   final double cantidad;
-  final String fecha;
+  final String fecha; // Recibimos el String completo (ej: 2025-11-20T00000000000x)
   final bool esGasto;
 
   const MovimientoCardWidget({
@@ -21,6 +22,19 @@ class MovimientoCardWidget extends StatelessWidget {
   String get signoMovimiento => esGasto ? "-" : "+";
   IconData get iconoMovimiento => esGasto ? Icons.arrow_upward : Icons.arrow_downward;
 
+  String get fechaFormateada {//para que salga la fecha bien
+    try {
+      // 1. Convertir el String ISO 8601 de Laravel a objeto DateTime
+      final DateTime dateTime = DateTime.parse(fecha);
+
+      // 2. Formatear al estilo deseado (ej: 20 Nov 2025)
+      // Usaremos 'dd/MM/yyyy' para ser consistentes con lo que escribes.
+      return DateFormat('dd/MM/yyyy').format(dateTime);
+    } catch (e) {
+      // Fallback si el string no es parseable (aunque no debería pasar)
+      return fecha;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +64,7 @@ class MovimientoCardWidget extends StatelessWidget {
           nombre,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
-        subtitle: Text(fecha, style: TextStyle(color: Colors.grey.shade600)),
+        subtitle: Text(fechaFormateada, style: TextStyle(color: Colors.grey.shade600)), // 💡 USAMOS EL GETTER
 
 
         // DERECHA: Cantidad con signo
