@@ -43,12 +43,11 @@ class _HabitosViewState extends State<HabitosView> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTabController(
-      length: 2,
+    return DefaultTabController(length: 2,
       child: MenuInferiorWidget(
 
-        colorTema: Colors.red,
-        accionMas: haySeleccion ? null : _abrirVentanaCrear,
+        colorMAS: Colors.red,
+        pulsarMAS: haySeleccion ? null : _abrirVentanaCrear,
 
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -164,37 +163,36 @@ class _HabitosViewState extends State<HabitosView> {
   }
   void _abrirVentanaCrear() {
     String nuevoTexto = "";
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
       builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-            left: 20, right: 20, top: 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+        return AlertDialog( // 💡 CAMBIO: Usamos AlertDialog para centrar
+          title: const Text("Nuevo Hábito"), // Título del AlertDialog
+          content: Column(
+            mainAxisSize: MainAxisSize.min, // Ajusta el tamaño al contenido
             children: [
-              const Text("Nuevo Hábito", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               TextField(
                 autofocus: true,
                 decoration: const InputDecoration(hintText: "Escribe el nombre..."),
                 onChanged: (val) => nuevoTexto = val,
               ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  if (nuevoTexto.isNotEmpty) {
-                    _crearHabito(nuevoTexto);
-                    Navigator.pop(context);
-                  }
-                },
-                child: const Text("Guardar"),
-              ),
-              const SizedBox(height: 20),
             ],
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancelar"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (nuevoTexto.isNotEmpty) {
+                  _crearHabito(nuevoTexto);
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text("Guardar"),
+            ),
+          ],
         );
       },
     );

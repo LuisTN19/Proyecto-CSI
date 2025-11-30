@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HabitoController;
+use App\Http\Controllers\EventoController;
 
 //RUTAS PÚBLICAS
 Route::post('/login', [AuthController::class, 'login']);
@@ -23,5 +24,8 @@ Route::middleware('auth:sanctum')->group(function () {  //si abres esta ruta me 
     Route::post('/habitos', [HabitoController::class, 'store']);
     Route::put('/habitos/{id}', [HabitoController::class, 'update']);
     Route::delete('/habitos/{id}', [HabitoController::class, 'destroy']);
+
+    Route::get('/eventos', [EventoController::class, 'index']);
+    Route::post('/eventos', [EventoController::class, 'store']);
 
 });

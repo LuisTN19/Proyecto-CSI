@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../core/widgets/menu_inferior_widget.dart';
+
 
 class xView extends StatelessWidget {
   const xView({super.key});
@@ -6,7 +8,9 @@ class xView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(length: 2,
-        child: Scaffold(
+        child: MenuInferiorWidget(
+          colorTema: Colors.blueAccent, // Color para el botón + (Azul)
+          accionMas: () => _abrirVentanaCrear(context),
 
           //....................................................................
           appBar: AppBar(
@@ -29,49 +33,13 @@ class xView extends StatelessWidget {
 
            ),
            //....................................................................
-
-
-          //....................................................................
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              print("Botón + pulsado en x");
-            },
-            backgroundColor: Colors.red,
-            child: const Icon(Icons.add, color: Colors.white),                  //BOTÓN +
-          ),
-
-          //para que se ponga en el centro:
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-         //.....................................................................
-
-
-          //....................................................................
-          bottomNavigationBar: BottomAppBar(
-
-            shape: const CircularNotchedRectangle(), //la muesca
-
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(                                                     //BOTÓN CASITA
-                  icon: const Icon(Icons.home, size: 30),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-
-                const SizedBox(width: 48),
-
-                IconButton(                                                     //BOTÓN PERFIL
-                  icon: const Icon(Icons.person_outline, size: 30),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ),
-          //....................................................................
-
         )
     );
   }
+
+   void _abrirVentanaCrear(BuildContext context) {
+        print("Abrir ventana para añadir Gasto/Ingreso");
+        // (Aquí irá el showModalBottomSheet en el futuro)
+     }
+
 }

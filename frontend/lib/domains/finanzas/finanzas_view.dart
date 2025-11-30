@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tugestor/core/widgets/menu_inferior_widget.dart';
 import 'boton_grande_widget.dart';
 
 class FinanzasView extends StatelessWidget {
@@ -17,7 +18,9 @@ class FinanzasView extends StatelessWidget {
 
 
     return DefaultTabController(length: 3,
-        child: Scaffold(
+        child: MenuInferiorWidget(
+          colorMAS: Colors.blueAccent, // Color para el botón + (Azul)
+          pulsarMAS: () => _abrirVentanaCrear(context),
 
           //....................................................................
           appBar: AppBar(
@@ -120,12 +123,12 @@ class FinanzasView extends StatelessWidget {
                               const Divider(thickness: 1),
                               // TOTAL
 
-                            const Center(
-                              child: Text(
-                                'Total: 0€',
-                                style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                              const Center(
+                                child: Text(
+                                  'Total: 0€',
+                                  style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                                ),
                               ),
-                            ),
 
                             ],
                           ),
@@ -175,47 +178,13 @@ class FinanzasView extends StatelessWidget {
           ),
           //....................................................................
 
-          //....................................................................
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              print("Botón + pulsado en Finanzas");
-            },
-            backgroundColor: Colors.blueAccent,
-            child: const Icon(Icons.add, color: Colors.white),                  //BOTÓN +
-          ),
-
-          //para que se ponga en el centro:
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          //.....................................................................
-
-
-          //....................................................................
-          bottomNavigationBar: BottomAppBar(
-
-            shape: const CircularNotchedRectangle(), //la muesca
-
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(                                                     //BOTÓN CASITA
-                  icon: const Icon(Icons.home, size: 30),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-
-                const SizedBox(width: 48),
-
-                IconButton(                                                     //BOTÓN PERFIL
-                  icon: const Icon(Icons.person_outline, size: 30),
-                  onPressed: () {},
-                ),
-              ],
-            ),
-          ),
-          //....................................................................
 
         )
     );
+  }
+
+  void _abrirVentanaCrear(BuildContext context) {
+    print("Abrir ventana para añadir Gasto/Ingreso");
+    // (Aquí irá el showModalBottomSheet en el futuro)
   }
 }

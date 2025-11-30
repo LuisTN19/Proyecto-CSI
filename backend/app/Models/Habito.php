@@ -14,4 +14,11 @@ class Habito extends Model
     protected $casts = [
         'completado' => 'boolean',
     ];
+
+
+    // 💡 Una Usuario puede tener muchos habitos asociados.
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

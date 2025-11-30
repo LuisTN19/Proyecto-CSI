@@ -16,17 +16,12 @@ class HabitoController extends Controller
     {
         $userId = $request->user()->id;
 
-        // --- LA MAGIA DEL RESETEO ---
-        // 1. Buscamos hábitos de este usuario que:
-        //    - Estén completados (true)
-        //    - Y su fecha de actualización sea MENOR a hoy (es decir, ayer o antes)
         Habito::where('user_id', $userId)
             ->where('completado', true)
             ->whereDate('updated_at', '<', Carbon::today()) // Si la fecha es vieja...
             ->update(['completado' => false]); // ... ¡PUM! Los reseteamos a false.
         // ----------------------------
 
-        // 2. Ahora devolvemos la lista (que ya estará limpia)
         return Habito::where('user_id', $userId)->get();
     }
 
@@ -38,8 +33,7 @@ class HabitoController extends Controller
         $habito = Habito::create([
             'nombre' => $request->nombre,
             'completado' => false,
-            // --- ¡ESTA ES LA LÍNEA QUE TE FALTA! ---
-            'user_id' => $request->user()->id, // Guardamos TU id
+            'user_id' => $request->user()->id, 
         ]);
 
         return response()->json($habito, 201);
