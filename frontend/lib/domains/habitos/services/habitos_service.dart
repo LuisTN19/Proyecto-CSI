@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-import '../../../core/services/login_service.dart';
+import '../../../../core/services/login_service.dart';
 
 
 class HabitosService {
@@ -17,8 +17,7 @@ class HabitosService {
   }
 
 
-
-  // 1. GET---------------------------------------------------------------------
+  // GET------------------------------------------------------------------------
   Future<List<Map<String, dynamic>>> getHabitos() async {
     try {
       final respuesta = await http.get(
@@ -33,7 +32,6 @@ class HabitosService {
             'id': item['id'],
             'nombre': item['nombre'],
             'completado': item['completado'] == 1 || item['completado'] == true,
-            'color': Colors.blue.shade100
           };
         }).toList().cast<Map<String, dynamic>>();
       } else {
@@ -45,7 +43,7 @@ class HabitosService {
     }
   }
 
-  // 2. POST--------------------------------------------------------------------
+  // POST-----------------------------------------------------------------------
   Future<bool> postHabito(String nombre) async {
     try {
       final respuesta = await http.post(
@@ -59,7 +57,7 @@ class HabitosService {
     }
   }
 
-  // 3. PUT---------------------------------------------------------------------
+  // PUT------------------------------------------------------------------------
   Future<bool> putHabito(int id, bool completadoActual) async {
     try {
       final nuevoEstado = !completadoActual;
@@ -77,7 +75,7 @@ class HabitosService {
     }
   }
 
-  // 4. DELETE------------------------------------------------------------------
+  // DELETE---------------------------------------------------------------------
   Future<bool> deleteHabito(int id) async {
     try {
       final respuesta = await http.delete(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart'; // Aunque no se use directamente, es común en services
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../../../core/services/login_service.dart';
+import '../../../../core/services/login_service.dart';
 // Asegúrate de que tienes tus modelos Categoria y Movimiento si los usas
 
 class FinanzasService { // 💡 Cambiamos el nombre a MovimientoService

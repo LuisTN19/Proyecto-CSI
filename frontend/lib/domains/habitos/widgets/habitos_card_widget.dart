@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 class HabitosCardWidget extends StatelessWidget {
   final String habito;
   final bool esta_completado;
-
   final VoidCallback al_pulsar_check;
 
   final bool es_seleccionado;
-  final VoidCallback al_pulsar_largo;
+  final bool hay_seleccion_activa;
+  final VoidCallback seleccionar;
 
   const HabitosCardWidget({
     super.key,
@@ -15,41 +15,37 @@ class HabitosCardWidget extends StatelessWidget {
     required this.esta_completado,
     required this.al_pulsar_check,
     required this.es_seleccionado,
-    required this.al_pulsar_largo,
+    required this.hay_seleccion_activa,
+    required this.seleccionar,
   });
+
 
   @override
   Widget build(BuildContext contexto) {
 
     return Card(
-      // CAMBIO DE COLOR: Si está seleccionado, AZUL CLARITO. Si no, BLANCO.
       color: es_seleccionado ? Colors.blue.shade100 : null,
-
       elevation: 2,
+
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        // CAMBIO DE BORDE: Si está seleccionado, borde AZUL GRUESO.
         side: es_seleccionado
             ? const BorderSide(color: Colors.blue, width: 2)
             : BorderSide.none,
       ),
+
       margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 16.0),
 
       child: InkWell(
-        // Si ya estamos seleccionando, un toque normal también selecciona
-        onTap: es_seleccionado ? al_pulsar_largo : () {
-          print("Pulsado para editar: $habito");
-        },
-
-        // --- AQUÍ CONECTAMOS EL PULSADO LARGO ---
-        onLongPress: al_pulsar_largo,
-
-
+        onTap: hay_seleccion_activa
+            ? seleccionar
+            : () {},
+        onLongPress: seleccionar,
 
         borderRadius: BorderRadius.circular(12),
+
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
-
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -66,10 +62,10 @@ class HabitosCardWidget extends StatelessWidget {
                 ),
               ),
 
-              // ICONO (CAMBIA SI ESTÁ SELECCIONADO)
+              // ICONO
               es_seleccionado
-                  ? const Icon(Icons.check_circle, color: Colors.blue, size: 30) // Icono azul fijo
-                  : IconButton( // Botón normal de tic
+                  ? const Icon(Icons.check_circle, color: Colors.blue, size: 30)
+                  : IconButton(
                 icon: Icon(
                   esta_completado ? Icons.check_circle : Icons.radio_button_unchecked,
                   color: esta_completado ? Colors.green : Colors.white,

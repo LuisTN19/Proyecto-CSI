@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 class EventoCardWidget extends StatelessWidget {
 
   final String titulo;
-  final String fecha; // Recibimos la fecha ya como texto (ej: "30/11/2025")
-  final Color colorFondo; // 💡 Recibimos el color desde AgendaView
+  final String fecha;
+  final Color colorFondo;
 
   const EventoCardWidget({
     super.key,
@@ -19,31 +19,34 @@ class EventoCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Card(
+
       margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-      elevation: 4, // Sombrita
-      color: colorFondo, // ¡Aquí va el color aleatorio!
+      elevation: 4,
+      color: colorFondo,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15), // Bordes redondeados
+        borderRadius: BorderRadius.circular(15),
       ),
+
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
 
-          crossAxisAlignment: CrossAxisAlignment.start, // Alinear a la izquierda
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             // TÍTULO DEL EVENTO
             Text(
               titulo,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.white, // Texto blanco para que resalte
+                color: Colors.white,
               ),
             ),
-            const SizedBox(height: 8), // Espacio
+            const SizedBox(height: 8),
 
-            // FECHA CON UN ICONO PEQUEÑO
+            // FECHA CON ICONO
             Row(
               children: [
                 const Icon(Icons.calendar_today, size: 16, color: Colors.white70),

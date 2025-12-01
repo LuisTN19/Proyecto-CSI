@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/menu_inferior_widget.dart';
 
 
-class xView extends StatelessWidget {
+class xView extends StatelessWidget {           //alt + Enter para cambiarlo a Stateful
   const xView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(length: 2,
         child: MenuInferiorWidget(
-          colorTema: Colors.blueAccent, // Color para el botón + (Azul)
-          accionMas: () => _abrirVentanaCrear(context),
+          colorMAS: Colors.blueAccent,
+          pulsarMAS: () => _abrirVentanaCrear(context),
 
           //....................................................................
           appBar: AppBar(
@@ -39,7 +39,6 @@ class xView extends StatelessWidget {
 
    void _abrirVentanaCrear(BuildContext context) {
         print("Abrir ventana para añadir Gasto/Ingreso");
-        // (Aquí irá el showModalBottomSheet en el futuro)
      }
 
 }

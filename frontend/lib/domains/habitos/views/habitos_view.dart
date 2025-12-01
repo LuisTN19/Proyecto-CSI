@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../core/widgets/menu_inferior_widget.dart';
-import 'habitos_card_widget.dart';
 
-import 'habitos_service.dart';
+import '../../../core/widgets/menu_inferior_widget.dart';
+import '../widgets/habitos_card_widget.dart';
+import '../widgets/crear_habito_widget.dart';
+
+import '../services/habitos_service.dart';
 
 
 
@@ -12,6 +14,7 @@ class HabitosView extends StatefulWidget {
   @override
   State<HabitosView> createState() => _HabitosViewState();
 }
+
 
 
 class _HabitosViewState extends State<HabitosView> {
@@ -24,12 +27,15 @@ class _HabitosViewState extends State<HabitosView> {
   Set<int> seleccionados = {};
   bool get haySeleccion => seleccionados.isNotEmpty;
 
+  //----------------------------------------------------------------------------
+
   @override
   void initState() {
     super.initState();
     _cargarDatos();
   }
 
+  //GET
   void _cargarDatos() async {
     final data = await _service.getHabitos();
     if (mounted) {
@@ -40,6 +46,7 @@ class _HabitosViewState extends State<HabitosView> {
     }
   }
 
+  //----------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +55,8 @@ class _HabitosViewState extends State<HabitosView> {
 
         colorMAS: Colors.red,
         pulsarMAS: haySeleccion ? null : _abrirVentanaCrear,
+
+        //**********************************************************************
 
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -63,12 +72,14 @@ class _HabitosViewState extends State<HabitosView> {
           ]
               : [],
 
-          bottom: haySeleccion ? null : const TabBar(
+          bottom: haySeleccion
+              ? null
+              : const TabBar(
             labelColor: Colors.red,
             indicatorColor: Colors.red,
-            unselectedLabelColor: Colors.white70, // Un poco más claro
+            unselectedLabelColor: Colors.white70,
             labelStyle: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
-            // ---------------------------------------
+
             tabs: [
               Tab(text: 'Por Hacer'),
               Tab(text: 'Completados'),
@@ -76,36 +87,44 @@ class _HabitosViewState extends State<HabitosView> {
           ),
         ),
 
+        //**********************************************************************
+
         body: TabBarView(
-          physics: haySeleccion ? const NeverScrollableScrollPhysics() : null,
           children: [
 
-            // LISTA 1
-            ListView.builder(
+
+            ListView.builder(                                                   //POR HACER
               itemCount: listaPorHacer.length,
+
               itemBuilder: (context, index) {
                 final item = listaPorHacer[index];
+
                 return HabitosCardWidget(
                   habito: item['nombre'],
                   esta_completado: false,
                   al_pulsar_check: () => _marcarCheck(item['id'], false),
                   es_seleccionado: seleccionados.contains(item['id']),
-                  al_pulsar_largo: () => _multiseleccion(item['id']),
+                  hay_seleccion_activa: haySeleccion,
+                  seleccionar: () => _multiseleccion(item['id']),
                 );
               },
             ),
 
-            // LISTA 2
-            ListView.builder(
+
+            ListView.builder(                                                   //COMPLETADOS
               itemCount: listaCompletados.length,
+
               itemBuilder: (context, index) {
                 final item = listaCompletados[index];
+
                 return HabitosCardWidget(
                   habito: item['nombre'],
                   esta_completado: true,
+
                   al_pulsar_check: () => _marcarCheck(item['id'], true),
                   es_seleccionado: seleccionados.contains(item['id']),
-                  al_pulsar_largo: () => _multiseleccion(item['id']),
+                  hay_seleccion_activa: haySeleccion,
+                  seleccionar: () => _multiseleccion(item['id']),
                 );
               },
             ),
@@ -115,14 +134,35 @@ class _HabitosViewState extends State<HabitosView> {
     );
   }
 
+  //----------------------------------------------------------------------------
 
+  void _abrirVentanaCrear() {
+    showDialog(
+      context: context,
+      builder: (context) {
 
+        return CrearHabitoWidget(
+          onGuardar: _crearHabito,
+        );
+      },
+    );
+  }
+
+  //POST
+  void _crearHabito(String nombre) async {
+    await _service.postHabito(nombre);
+    _cargarDatos();
+  }
+
+  //----------------------------------------------------------------------------
+
+  //PUT
   void _marcarCheck(int id, bool estado) async {
     await _service.putHabito(id, estado);
     _cargarDatos();
   }
 
-
+  //----------------------------------------------------------------------------
 
   void _multiseleccion(int id) {
     setState(() {
@@ -133,14 +173,18 @@ class _HabitosViewState extends State<HabitosView> {
       }
     });
   }
+
+  //DELETE
   void _borrarSeleccionados() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("¿Borrar?"),
-        content: Text("Eliminar ${seleccionados.length} hábitos."),
+        content: Text("Se eliminarán ${seleccionados.length} hábitos permanentemente."),
+
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
@@ -150,52 +194,11 @@ class _HabitosViewState extends State<HabitosView> {
             },
             child: const Text("Borrar", style: TextStyle(color: Colors.red)),
           ),
+
         ],
       ),
     );
   }
 
-
-
-  void _crearHabito(String nombre) async {
-    await _service.postHabito(nombre);
-    _cargarDatos();
-  }
-  void _abrirVentanaCrear() {
-    String nuevoTexto = "";
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog( // 💡 CAMBIO: Usamos AlertDialog para centrar
-          title: const Text("Nuevo Hábito"), // Título del AlertDialog
-          content: Column(
-            mainAxisSize: MainAxisSize.min, // Ajusta el tamaño al contenido
-            children: [
-              TextField(
-                autofocus: true,
-                decoration: const InputDecoration(hintText: "Escribe el nombre..."),
-                onChanged: (val) => nuevoTexto = val,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancelar"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (nuevoTexto.isNotEmpty) {
-                  _crearHabito(nuevoTexto);
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text("Guardar"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
+  //----------------------------------------------------------------------------
 }

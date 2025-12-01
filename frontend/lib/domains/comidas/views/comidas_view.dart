@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'platos_card_widget.dart';
+import '../widgets/platos_card_widget.dart';
 import 'detalle_plato_view.dart';
 
 

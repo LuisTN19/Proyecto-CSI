@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:tugestor/core/widgets/domain_card_widget.dart';
 
-import '../../domains/finanzas/finanzas_view.dart';
-import '../../domains/habitos/habitos_view.dart';
-import '../../domains/comidas/comidas_view.dart';
-import '../../domains/agenda/agenda_view.dart';
+import '../../domains/finanzas/views/finanzas_view.dart';
+import '../../domains/habitos/views/habitos_view.dart';
+import '../../domains/comidas/views/comidas_view.dart';
+import '../../domains/agenda/views/agenda_view.dart';
 import 'perfil_view.dart';
 
 

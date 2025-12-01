@@ -18,12 +18,12 @@ class HabitoController extends Controller
 
         Habito::where('user_id', $userId)
             ->where('completado', true)
-            ->whereDate('updated_at', '<', Carbon::today()) // Si la fecha es vieja...
-            ->update(['completado' => false]); // ... ¡PUM! Los reseteamos a false.
-        // ----------------------------
+            ->whereDate('updated_at', '<', Carbon::today()) 
+            ->update(['completado' => false]); 
 
         return Habito::where('user_id', $userId)->get();
     }
+
 
     // POST
     public function store(Request $request)
@@ -39,15 +39,13 @@ class HabitoController extends Controller
         return response()->json($habito, 201);
     }
 
+
     // PUT
     public function update(Request $request, $id)
     {
         $habito = Habito::find($id);
         
-        // Verificamos que el hábito sea del usuario que lo pide
         if ($habito && $habito->user_id == $request->user()->id) {
-            
-            // Actualizamos forzando a booleano (true/false)
             $habito->completado = filter_var($request->completado, FILTER_VALIDATE_BOOLEAN);
             $habito->save();
 
@@ -56,6 +54,7 @@ class HabitoController extends Controller
 
         return response()->json(['error' => 'No encontrado o no autorizado'], 404);
     }
+
 
     // DELETE
     public function destroy($id)
