@@ -43,6 +43,23 @@ class _FinanzasViewState extends State<FinanzasView> {
     });
   }
 
+  // Calcula el total de todos los gastos (esGasto == true)
+  double get totalGastos {
+    return listaMovimientos
+        .where((m) => m['esGasto'] == true)
+        .fold(0.0, (sum, item) => sum + item['cantidad']);
+  }
+
+  // Calcula el total de todos los ingresos (esGasto == false)
+  double get totalIngresos {
+    return listaMovimientos
+        .where((m) => m['esGasto'] == false)
+        .fold(0.0, (sum, item) => sum + item['cantidad']);
+  }
+
+  // Calcula el total neto
+  double get totalNeto => totalIngresos - totalGastos;
+
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +73,12 @@ class _FinanzasViewState extends State<FinanzasView> {
     String nombre_del_mes = meses[numero_del_mes - 1];
 
 
+    final double totalMovido = totalGastos + totalIngresos;
 
+// Define el valor de las barras
+// Si no hay movimientos, el valor es 0 para evitar división por cero.
+    final double valorGastoBarra = totalMovido > 0 ? totalGastos / totalMovido : 0.0;
+    final double valorIngresoBarra = totalMovido > 0 ? totalIngresos / totalMovido : 0.0;
 
     return DefaultTabController(length: 3,
         child: MenuInferiorWidget(
@@ -108,31 +130,50 @@ class _FinanzasViewState extends State<FinanzasView> {
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              /*Center(
-                                child: Text(                                        //MES
-                                  '$nombre_del_mes ${ahora.year}',
-                                  style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                                ),
-                              ),*/
 
-                              /*Text(
-                                '$nombre_del_mes ${ahora.year}',
-                                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                              ),*/
 
-                              Column(                                   //GASTOS
+                              Column(                                 //INGRESOS
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Row(
+                                  Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
-                                      Text('Gastos', style: TextStyle(fontSize: 20)),
-                                      Text('0€', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red)),
+                                      Text('Ingresos', style: TextStyle(fontSize: 20)),
+                                      Text(
+                                          '${totalIngresos.toStringAsFixed(2)}€',
+                                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)
+                                      ),
                                     ],
                                   ),
                                   const SizedBox(height: 8),
                                   LinearProgressIndicator(
-                                    value: 0.0,
+                                    value: valorGastoBarra,
+                                    minHeight: 10,
+                                    backgroundColor: Colors.grey.shade300,
+                                    color: Colors.green,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                ],
+                              ),
+
+
+
+                              Column(                                   //GASTOS
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text('Gastos', style: TextStyle(fontSize: 20)),
+                                      Text(
+                                          '${totalGastos.toStringAsFixed(2)}€',
+                                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red)
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  LinearProgressIndicator(
+                                    value: valorGastoBarra,
                                     minHeight: 10,
                                     backgroundColor: Colors.grey.shade300,
                                     color: Colors.red,
@@ -141,33 +182,15 @@ class _FinanzasViewState extends State<FinanzasView> {
                                 ],
                               ),
 
-                              Column(                                 //INGRESOS
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text('Ingresos', style: TextStyle(fontSize: 20)),
-                                      Text('0€', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  LinearProgressIndicator(
-                                    value: 0.0,
-                                    minHeight: 10,
-                                    backgroundColor: Colors.grey.shade300,
-                                    color: Colors.green,
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                ],
-                              ),
-                              const Divider(thickness: 1),
-                              // TOTAL
 
-                              const Center(
+
+
+                              const Divider(thickness: 1),
+                              Center(
                                 child: Text(
-                                  'Total: 0€',
-                                  style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                                  // 💡 CAMBIO 4: USAR totalNeto
+                                  'Total: ${totalNeto.toStringAsFixed(2)}€',
+                                  style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                                 ),
                               ),
 

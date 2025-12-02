@@ -37,4 +37,10 @@ class EventoController extends Controller
 
         return response()->json($event, 201);
     }
+
+    
+    public function destroy(Request $request)
+    {
+
+    }
 }

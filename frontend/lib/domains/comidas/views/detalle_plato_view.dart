@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:tugestor/core/widgets/menu_inferior_widget.dart'; // Ajusta la ruta si es necesario
 
+import '../services/cesta_service.dart';
 class DetallePlatoView extends StatelessWidget {
 
   final String nombre;
+  final String? imagenUrl; // 💡 1. NUEVO: Recibimos la URL de la imagen (opcional)
 
-  // Datos simulados
+  // Datos simulados (Hardcoded por ahora)
   final String descripcion = "Un plato delicioso y tradicional, perfecto para cualquier ocasión. Se cocina a fuego lento para mantener todo el sabor.";
   final List<String> ingredientes = ["Pollo", "Aceite", "Ajo", "Sal", "Pimienta", "Laurel"];
-  final String categoria = "Carnes";
 
-  // Datos
   final String tiempo = "45 min";
   final String calorias = "450 kcal";
   final String dificultad = "Media";
+
   DetallePlatoView({
     super.key,
     required this.nombre,
+    this.imagenUrl, // 💡 2. AÑADIDO AL CONSTRUCTOR
   });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return MenuInferiorWidget(
 
       appBar: AppBar(
         title: Text(nombre),
@@ -29,10 +32,12 @@ class DetallePlatoView extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
+            color: Colors.white,
             onPressed: () { print("Editar"); },
           ),
           IconButton(
             icon: const Icon(Icons.delete),
+            color: Colors.red,
             onPressed: () { print("Borrar"); },
           ),
         ],
@@ -45,20 +50,33 @@ class DetallePlatoView extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // FOTO
-              Container(
-                height: 200,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.orange.shade100,
-                  borderRadius: BorderRadius.circular(12),
+              // 💡 3. FOTO CON LÓGICA (Si hay URL ? Foto : Icono)
+              ClipRRect( // ClipRRect recorta la imagen para que tenga bordes redondeados
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  height: 200,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    // Si no hay imagen, usamos el naranja claro de fondo.
+                    // Si hay imagen, el Image.network la tapará, así que no importa.
+                    color: Colors.orange.shade100,
+                  ),
+                  child: imagenUrl != null && imagenUrl!.isNotEmpty
+                      ? Image.network(
+                    imagenUrl!,
+                    fit: BoxFit.cover, // La imagen llena todo el hueco
+                    errorBuilder: (context, error, stackTrace) {
+                      // Si la URL falla (ej: 404), mostramos el icono de reserva
+                      return const Icon(Icons.restaurant_menu, size: 100, color: Colors.orange);
+                    },
+                  )
+                      : const Icon(Icons.restaurant_menu, size: 100, color: Colors.orange), // Si es null, mostramos icono
                 ),
-                child: const Icon(Icons.restaurant_menu, size: 100, color: Colors.orange),
               ),
 
               const SizedBox(height: 24),
 
-              // TÍTULO Y CATEGORÍA
+              // TÍTULO
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -68,11 +86,6 @@ class DetallePlatoView extends StatelessWidget {
                       style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  Chip(
-                    label: Text(categoria, style: const TextStyle(color: Colors.orange)),
-                    backgroundColor: Colors.orange.shade50,
-                    side: BorderSide.none,
                   ),
                 ],
               ),
@@ -110,9 +123,50 @@ class DetallePlatoView extends StatelessWidget {
               ),
               const SizedBox(height: 8),
 
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Ingredientes", // Título original
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  // 💡 BOTÓN MÁGICO PARA AÑADIR TODO DE UNA VEZ
+                  TextButton.icon(
+                    icon: Icon(Icons.shopping_basket, size: 18, color: Colors.orange),
+                    label: Text("Añadir todo", style: TextStyle(color: Colors.orange)),
+                    onPressed: () {
+                      for (var ing in ingredientes) {
+                        CestaService.agregar(ing); // Añade a la lista global
+                      }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("¡Todos los ingredientes añadidos a la cesta!")),
+                      );
+                    },
+                  )
+                ],
+              ),
+              const SizedBox(height: 8),
+
+// CHIPS CLICABLES INDIVIDUALES
               Wrap(
                 spacing: 8.0,
-                children: ingredientes.map((ing) => Chip(label: Text(ing))).toList(),
+                children: ingredientes.map((ing) => ActionChip( // 💡 CAMBIO: ActionChip
+                  label: Text(ing),
+                  backgroundColor: Colors.grey.shade800,
+                  labelStyle: const TextStyle(color: Colors.white),
+                  avatar: const Icon(Icons.add, size: 16, color: Colors.orange), // Un + visual
+                  onPressed: () {
+                    // 💡 LÓGICA: Añadir solo este ingrediente
+                    CestaService.agregar(ing);
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text("Añadido: $ing"),
+                          duration: Duration(milliseconds: 800) // Rápido para no molestar
+                      ),
+                    );
+                  },
+                )).toList(),
               ),
 
               const SizedBox(height: 32),
@@ -129,12 +183,10 @@ class DetallePlatoView extends StatelessWidget {
                   children: [
                     _DatoIcono(Icons.access_time, tiempo),
                     _DatoIcono(Icons.local_fire_department, calorias),
-                    // ¡VUELVE LA DIFICULTAD!
                     _DatoIcono(Icons.bar_chart, dificultad),
                   ],
                 ),
               ),
-              // -----------------------------------------
 
               const SizedBox(height: 40),
 
@@ -146,7 +198,7 @@ class DetallePlatoView extends StatelessWidget {
   }
 }
 
-// --- WIDGET PRIVADO ---
+// --- WIDGET PRIVADO (Igual que antes) ---
 class _DatoIcono extends StatelessWidget {
   final IconData icono;
   final String texto;

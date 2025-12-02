@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:tugestor/core/widgets/menu_inferior_widget.dart';
 import '../widgets/platos_card_widget.dart';
 import 'detalle_plato_view.dart';
-
+import '../services/cesta_service.dart';
+import '../widgets/crear_plato_widget.dart';
 
 class ComidasView extends StatefulWidget {
   const ComidasView({super.key});
@@ -13,18 +15,31 @@ class ComidasView extends StatefulWidget {
 class _ComidasViewState extends State<ComidasView> {
 
 
-  List<Map<String, dynamic>> lista_platos = [
-    {'nombre': 'Pollo Asado', 'fav': true},
-    {'nombre': 'Ensalada César', 'fav': false},
-    {'nombre': 'Macarrones con Tomate', 'fav': false},
-    {'nombre': 'Salmón a la Plancha', 'fav': true},
-    {'nombre': 'Tortilla de Patatas', 'fav': true},
-    {'nombre': 'Lentejas', 'fav': false},
+  List<Map<String, dynamic>> lista_platos = [];
+  final List<Map<String, dynamic>> _platosDeEjemplo = [
+    {
+      'nombre': 'Lentejas con verduras',
+      'favorito': true,
+      'url': 'https://picsum.photos/id/1084/100/100', // URL con imagen
+      'placeholderIcon': Icons.restaurant,
+    },
+    {
+      'nombre': 'Pollo al Curry',
+      'favorito': false,
+      'url': null, // Sin imagen, usará el ícono
+      'placeholderIcon': Icons.home_work,
+    },
+    {
+      'nombre': 'Ensalada de Quinoa',
+      'favorito': true,
+      'url': 'https://picsum.photos/id/1025/100/100',
+      'placeholderIcon': Icons.local_dining,
+    },
   ];
 
   void _cambiarFavorito(int indice) {
     setState(() {
-      lista_platos[indice]['fav'] = !lista_platos[indice]['fav'];
+      _platosDeEjemplo[indice]['favorito'] = !_platosDeEjemplo[indice]['favorito'];
     });
   }
 
@@ -33,7 +48,10 @@ class _ComidasViewState extends State<ComidasView> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(length: 2,
-        child: Scaffold(
+        child: MenuInferiorWidget(
+
+          colorMAS: Colors.orange,
+          pulsarMAS: () => _abrirVentanaCrear(),
 
           //....................................................................
           appBar: AppBar(
@@ -81,12 +99,6 @@ class _ComidasViewState extends State<ComidasView> {
 
                           const SizedBox(width: 8),
 
-                          // EL FILTRO
-                          IconButton(
-                            icon: const Icon(Icons.tune),
-                            onPressed: () {},
-                          ),
-
                           // ORDENAR
                           IconButton(
                             icon: const Icon(Icons.swap_vert),
@@ -102,34 +114,45 @@ class _ComidasViewState extends State<ComidasView> {
                         ],
                       ),
 
+                      const SizedBox(width: 25),
+
                       //LISTA DE PLATOS
                       Expanded(
                         child: ListView.builder(
-                          itemCount: lista_platos.length,
+                          padding: const EdgeInsets.only(top: 20, bottom: 100),
 
+                          itemCount: _platosDeEjemplo.length,
                           itemBuilder: (context, index) {
-                            final plato = lista_platos[index];
+                            final plato = _platosDeEjemplo[index];
 
                             return PlatoCardWidget(
-                              nombre: plato['nombre'],
-                              es_favorito: plato['fav'],
+                              nombre: plato['nombre'] as String,
+                              esFavorito: plato['favorito'] as bool,
+
+                              // ✅ NUEVOS/REVERTIDOS ATRIBUTOS:
+                              imagenUrl: plato['url'] as String?, // Puede ser nulo
+                              placeholderIcon: plato['placeholderIcon'] as IconData, // Debe ser IconData
+
+                              // ❌ ELIMINAMOS: calificacion: (plato['calificacion'] as int?) ?? 0,
+
+                              onToggleFavorite: () {
+                                _cambiarFavorito(index);
+                              },
+
                               onTap: () {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => DetallePlatoView(
                                       nombre: plato['nombre'],
+                                      imagenUrl: plato['url'], // <--- ¡AÑADIR ESTO! (la clave de tu mapa de datos)
                                     ),
                                   ),
                                 );
                               },
-                              onFavoritoPressed: () {
-                                _cambiarFavorito(index);
-                              },
-
                             );
                           },
-                        ),
+                        )
                       ),
 
                     ],
@@ -137,53 +160,117 @@ class _ComidasViewState extends State<ComidasView> {
                 ),
 
 
-                const Center(child: Text("Lista de la compra")),                //PESTAÑA CESTA
-              ]
-          ),
-          //....................................................................
+                ValueListenableBuilder<List<String>>(                           //PESTAÑA CESTA
+                  valueListenable: CestaService.itemsNotifier,
+                  builder: (context, listaCompra, child) {
 
+                    // 1. Si está vacía, mostramos mensaje bonito
+                    if (listaCompra.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.shopping_basket_outlined, size: 80, color: Colors.grey.shade800),
+                            const SizedBox(height: 20),
+                            const Text("Tu cesta está vacía", style: TextStyle(color: Colors.grey, fontSize: 18)),
+                          ],
+                        ),
+                      );
+                    }
 
-          //....................................................................
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              print("Botón + pulsado en x");
-            },
-            backgroundColor: Colors.orange,
-            child: const Icon(Icons.add, color: Colors.white),                  //BOTÓN +
-          ),
+                    // 2. Si hay cosas, mostramos la lista con estilo oscuro
+                    return Column(
+                      children: [
+                        // Cabecera opcional para borrar todo
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("Tienes ${listaCompra.length} productos", style: const TextStyle(color: Colors.white70)),
+                              TextButton(
+                                onPressed: () => CestaService.limpiarCesta(),
+                                child: const Text("Borrar todo", style: TextStyle(color: Colors.redAccent)),
+                              )
+                            ],
+                          ),
+                        ),
 
-          //para que se ponga en el centro:
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          //.....................................................................
+                        // La Lista
+                        Expanded(
+                          child: ListView.builder(
+                            itemCount: listaCompra.length,
+                            itemBuilder: (context, index) {
+                              final item = listaCompra[index];
 
+                              return Card(
+                                color: Colors.grey.shade900,
+                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                child: ListTile(
+                                  // Checkbox visual (no funcional, solo estético o para marcar)
+                                  leading: Icon(Icons.radio_button_unchecked, color: Colors.orange.shade400),
 
-          //....................................................................
-          bottomNavigationBar: BottomAppBar(
+                                  title: Text(
+                                    item,
+                                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                                  ),
 
-            shape: const CircularNotchedRectangle(), //la muesca
-
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(                                                     //BOTÓN CASITA
-                  icon: const Icon(Icons.home, size: 30),
-                  onPressed: () {
-                    Navigator.pop(context);
+                                  // Botón de basura para borrar este ítem concreto
+                                  trailing: IconButton(
+                                    icon: const Icon(Icons.close, color: Colors.grey),
+                                    onPressed: () => CestaService.eliminar(item),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    );
                   },
                 ),
-
-                const SizedBox(width: 48),
-
-                IconButton(                                                     //BOTÓN PERFIL
-                  icon: const Icon(Icons.person_outline, size: 30),
-                  onPressed: () {},
-                ),
-              ],
-            ),
+              ]
           ),
-          //....................................................................
-
         )
     );
+  }
+
+  void _abrirVentanaCrear() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CrearPlatoWidget(
+          onGuardar: _crearPlato,
+        );
+      },
+    );
+  }
+
+  void _crearPlato(
+      String nombre,
+      String descripcion,
+      List<String> ingredientes,
+      String tiempo,
+      String calorias,
+      String dificultad,
+      int estrellas) {
+
+    setState(() {
+      _platosDeEjemplo.add({
+        'nombre': nombre,
+        'favorito': false, // Por defecto no es favorito
+        'url': null,       // Por defecto sin imagen (sale el placeholder)
+        'placeholderIcon': Icons.restaurant, // Icono por defecto
+
+        // Guardamos los datos extra para pasarlos luego al Detalle
+        'descripcion': descripcion,
+        'ingredientes': ingredientes,
+        'tiempo': tiempo,
+        'calorias': calorias,
+        'dificultad': dificultad,
+        'calificacion': estrellas,
+      });
+    });
   }
 }

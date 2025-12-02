@@ -10,7 +10,7 @@ class xView extends StatelessWidget {           //alt + Enter para cambiarlo a S
     return DefaultTabController(length: 2,
         child: MenuInferiorWidget(
           colorMAS: Colors.blueAccent,
-          pulsarMAS: () => _abrirVentanaCrear(context),
+          pulsarMAS: () => _abrirVentanaCrear(),
 
           //....................................................................
           appBar: AppBar(
