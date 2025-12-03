@@ -7,8 +7,7 @@ typedef GuardarPlatoCallback = void Function(
     List<String> ingredientes, // Lo pasaremos como lista
     String tiempo,
     String calorias,
-    String dificultad,
-    int estrellas,
+    double estrellas,
     );
 
 class CrearPlatoWidget extends StatefulWidget {
@@ -31,11 +30,8 @@ class _CrearPlatoWidgetState extends State<CrearPlatoWidget> {
   String _tiempo = "";
   String _calorias = "";
 
-  String _dificultad = "Media"; // Valor por defecto
-  int _estrellas = 3; // Valor por defecto
+  double _estrellas = 3.0; // Valor por defecto
 
-  // Lista de dificultades para los Chips
-  final List<String> _nivelesDificultad = ["Fácil", "Media", "Difícil"];
 
   // FUNCIÓN GUARDAR
   void _guardarPlato() {
@@ -52,7 +48,6 @@ class _CrearPlatoWidgetState extends State<CrearPlatoWidget> {
         listaIngredientes,
         _tiempo,
         _calorias,
-        _dificultad,
         _estrellas,
       );
       Navigator.pop(context);
@@ -60,7 +55,7 @@ class _CrearPlatoWidgetState extends State<CrearPlatoWidget> {
   }
 
   // Widget auxiliar para las estrellas interactivas
-  Widget _buildSelectorEstrellas() {
+  /*Widget _buildSelectorEstrellas() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(5, (index) {
@@ -73,6 +68,38 @@ class _CrearPlatoWidgetState extends State<CrearPlatoWidget> {
           onPressed: () {
             setState(() {
               _estrellas = index + 1;
+            });
+          },
+        );
+      }),
+    );
+  }*/
+  Widget _buildSelectorEstrellas() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(5, (index) {
+        // Lógica para saber qué icono pintar
+        IconData icono = Icons.star_border;
+        if (_estrellas >= index + 1) {
+          icono = Icons.star;       // Llena
+        } else if (_estrellas >= index + 0.5) {
+          icono = Icons.star_half;  // Media
+        }
+
+        return IconButton(
+          icon: Icon(icono, color: Colors.orange, size: 32),
+          onPressed: () {
+            setState(() {
+              double valorPulsado = index + 1.0;
+
+              // 💡 EL TRUCO:
+              // Si pulso una estrella que ya tengo (ej: 4), la bajo a media (3.5).
+              // Si no, la pongo entera.
+              if (_estrellas == valorPulsado) {
+                _estrellas = valorPulsado - 0.5;
+              } else {
+                _estrellas = valorPulsado;
+              }
             });
           },
         );
@@ -143,26 +170,6 @@ class _CrearPlatoWidgetState extends State<CrearPlatoWidget> {
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 15),
-
-            // 4. DIFICULTAD (ChoiceChips)
-            const Text("Dificultad:", style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8.0,
-              children: _nivelesDificultad.map((nivel) {
-                final isSelected = _dificultad == nivel;
-                return ChoiceChip(
-                  label: Text(nivel),
-                  selected: isSelected,
-                  selectedColor: Colors.orange,
-                  labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black),
-                  onSelected: (selected) {
-                    if (selected) setState(() => _dificultad = nivel);
-                  },
-                );
-              }).toList(),
             ),
             const SizedBox(height: 15),
 

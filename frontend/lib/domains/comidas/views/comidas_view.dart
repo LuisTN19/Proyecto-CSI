@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:tugestor/core/widgets/menu_inferior_widget.dart';
+
+import '../../../core/widgets/menu_inferior_widget.dart';
 import '../widgets/platos_card_widget.dart';
 import 'detalle_plato_view.dart';
-import '../services/cesta_service.dart';
 import '../widgets/crear_plato_widget.dart';
+
+import '../services/cesta_service.dart';
+import '../services/comidas_service.dart';
+
 
 class ComidasView extends StatefulWidget {
   const ComidasView({super.key});
@@ -12,35 +16,50 @@ class ComidasView extends StatefulWidget {
   State<ComidasView> createState() => _ComidasViewState();
 }
 
+
 class _ComidasViewState extends State<ComidasView> {
 
 
-  List<Map<String, dynamic>> lista_platos = [];
-  final List<Map<String, dynamic>> _platosDeEjemplo = [
-    {
-      'nombre': 'Lentejas con verduras',
-      'favorito': true,
-      'url': 'https://picsum.photos/id/1084/100/100', // URL con imagen
-      'placeholderIcon': Icons.restaurant,
-    },
-    {
-      'nombre': 'Pollo al Curry',
-      'favorito': false,
-      'url': null, // Sin imagen, usará el ícono
-      'placeholderIcon': Icons.home_work,
-    },
-    {
-      'nombre': 'Ensalada de Quinoa',
-      'favorito': true,
-      'url': 'https://picsum.photos/id/1025/100/100',
-      'placeholderIcon': Icons.local_dining,
-    },
-  ];
 
-  void _cambiarFavorito(int indice) {
+  final PlatosService _service = PlatosService(); // 💡 1. Instancia del servicio
+
+  // 💡 2. Lista vacía al inicio (borra tu lista _platosDeEjemplo con datos falsos)
+  List<Map<String, dynamic>> _misPlatos = [];
+
+  // 💡 3. Cargar datos al iniciar
+  @override
+  void initState() {
+    super.initState();
+    _cargarDatos();
+  }
+
+  // 💡 4. Función para pedir los platos a Laravel
+  void _cargarDatos() async {
+    final datos = await _service.getPlatos();
+    if (mounted) {
+      setState(() {
+        _misPlatos = datos;
+      });
+    }
+  }
+
+  //----------------------------------------------------------------------------
+
+  void _cambiarFavorito(int index) async {
+    final plato = _misPlatos[index];
+    bool nuevoEstado = !plato['favorito'];
+    int idPlato = plato['id']; // Necesitamos el ID que viene de Laravel
+
+    // 1. Cambio visual inmediato (Optimista)
     setState(() {
-      _platosDeEjemplo[indice]['favorito'] = !_platosDeEjemplo[indice]['favorito'];
+      _misPlatos[index]['favorito'] = nuevoEstado;
     });
+
+    // 2. Enviar cambio al Backend
+    // Enviamos solo el campo que cambia
+    await _service.updatePlato(idPlato, {'favorito': nuevoEstado});
+
+    // Opcional: _cargarDatos(); // Si quieres asegurar sincronización total
   }
 
 
@@ -53,7 +72,8 @@ class _ComidasViewState extends State<ComidasView> {
           colorMAS: Colors.orange,
           pulsarMAS: () => _abrirVentanaCrear(),
 
-          //....................................................................
+          //********************************************************************
+
           appBar: AppBar(
             automaticallyImplyLeading: false, //sin flechita
             bottom: const TabBar(
@@ -66,10 +86,9 @@ class _ComidasViewState extends State<ComidasView> {
                 ]
             ),
           ),
-          //....................................................................
 
+          //********************************************************************
 
-          //....................................................................
           body: TabBarView(
               children: [
 
@@ -82,7 +101,7 @@ class _ComidasViewState extends State<ComidasView> {
                       Row(
                         children: [
 
-                          // EL BUSCADOR
+                          // BUSCADOR
                           Expanded(
                             child: TextField(
                               decoration: InputDecoration(
@@ -116,28 +135,26 @@ class _ComidasViewState extends State<ComidasView> {
 
                       const SizedBox(width: 25),
 
-                      //LISTA DE PLATOS
-                      Expanded(
+
+                      Expanded(                                //LISTA DE PLATOS
                         child: ListView.builder(
                           padding: const EdgeInsets.only(top: 20, bottom: 100),
 
-                          itemCount: _platosDeEjemplo.length,
+                          itemCount: _misPlatos.length,
                           itemBuilder: (context, index) {
-                            final plato = _platosDeEjemplo[index];
+                            final plato = _misPlatos[index];
 
                             return PlatoCardWidget(
-                              nombre: plato['nombre'] as String,
-                              esFavorito: plato['favorito'] as bool,
+                              nombre: plato['nombre'],
+                              esFavorito: plato['favorito'],
+                              imagenUrl: plato['url'],
+                              placeholderIcon: Icons.restaurant,
 
-                              // ✅ NUEVOS/REVERTIDOS ATRIBUTOS:
-                              imagenUrl: plato['url'] as String?, // Puede ser nulo
-                              placeholderIcon: plato['placeholderIcon'] as IconData, // Debe ser IconData
-
-                              // ❌ ELIMINAMOS: calificacion: (plato['calificacion'] as int?) ?? 0,
 
                               onToggleFavorite: () {
                                 _cambiarFavorito(index);
                               },
+
 
                               onTap: () {
                                 Navigator.push(
@@ -145,7 +162,12 @@ class _ComidasViewState extends State<ComidasView> {
                                   MaterialPageRoute(
                                     builder: (context) => DetallePlatoView(
                                       nombre: plato['nombre'],
-                                      imagenUrl: plato['url'], // <--- ¡AÑADIR ESTO! (la clave de tu mapa de datos)
+                                      imagenUrl: plato['url'],
+                                      descripcion: plato['descripcion'] ?? "Sin descripción",
+                                      ingredientes: List<String>.from(plato['ingredientes'] ?? []),
+                                      tiempo: plato['tiempo'] ?? "N/A",
+                                      calorias: plato['calorias'] ?? "N/A",
+                                      estrellas: (plato['calificacion'] ?? 0).toDouble(),
                                     ),
                                   ),
                                 );
@@ -159,12 +181,12 @@ class _ComidasViewState extends State<ComidasView> {
                   ),
                 ),
 
+                //..............................................................
 
                 ValueListenableBuilder<List<String>>(                           //PESTAÑA CESTA
                   valueListenable: CestaService.itemsNotifier,
                   builder: (context, listaCompra, child) {
 
-                    // 1. Si está vacía, mostramos mensaje bonito
                     if (listaCompra.isEmpty) {
                       return Center(
                         child: Column(
@@ -178,10 +200,8 @@ class _ComidasViewState extends State<ComidasView> {
                       );
                     }
 
-                    // 2. Si hay cosas, mostramos la lista con estilo oscuro
                     return Column(
                       children: [
-                        // Cabecera opcional para borrar todo
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Row(
@@ -208,7 +228,6 @@ class _ComidasViewState extends State<ComidasView> {
                                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 child: ListTile(
-                                  // Checkbox visual (no funcional, solo estético o para marcar)
                                   leading: Icon(Icons.radio_button_unchecked, color: Colors.orange.shade400),
 
                                   title: Text(
@@ -216,7 +235,6 @@ class _ComidasViewState extends State<ComidasView> {
                                     style: const TextStyle(color: Colors.white, fontSize: 16),
                                   ),
 
-                                  // Botón de basura para borrar este ítem concreto
                                   trailing: IconButton(
                                     icon: const Icon(Icons.close, color: Colors.grey),
                                     onPressed: () => CestaService.eliminar(item),
@@ -236,6 +254,8 @@ class _ComidasViewState extends State<ComidasView> {
     );
   }
 
+  //----------------------------------------------------------------------------
+
   void _abrirVentanaCrear() {
     showDialog(
       context: context,
@@ -253,24 +273,27 @@ class _ComidasViewState extends State<ComidasView> {
       List<String> ingredientes,
       String tiempo,
       String calorias,
-      String dificultad,
-      int estrellas) {
+      double estrellas) async { // 💡 Ahora es async
 
-    setState(() {
-      _platosDeEjemplo.add({
-        'nombre': nombre,
-        'favorito': false, // Por defecto no es favorito
-        'url': null,       // Por defecto sin imagen (sale el placeholder)
-        'placeholderIcon': Icons.restaurant, // Icono por defecto
+    // Preparamos el mapa de datos para enviar
+    Map<String, dynamic> nuevoPlato = {
+      'nombre': nombre,
+      'descripcion': descripcion,
+      'ingredientes': ingredientes,
+      'tiempo': tiempo,
+      'calorias': calorias,
+      'calificacion': estrellas,
+      'url': null, // Por ahora null, luego podrías añadir subir foto
+    };
 
-        // Guardamos los datos extra para pasarlos luego al Detalle
-        'descripcion': descripcion,
-        'ingredientes': ingredientes,
-        'tiempo': tiempo,
-        'calorias': calorias,
-        'dificultad': dificultad,
-        'calificacion': estrellas,
-      });
-    });
+    // 💡 LLAMADA AL SERVICIO
+    bool exito = await _service.postPlato(nuevoPlato);
+
+    if (exito) {
+      _cargarDatos(); // Si se guardó bien, recargamos la lista del servidor
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Plato creado con éxito")));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error al guardar"), backgroundColor: Colors.red));
+    }
   }
 }

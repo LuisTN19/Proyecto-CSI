@@ -16,7 +16,7 @@ class MenuInferiorWidget extends StatelessWidget {
     required this.body,
     this.appBar,
     this.pulsarMAS,
-    this.colorMAS = Colors.grey, //color por defecto por si se nos olvida
+    this.colorMAS = Colors.grey,
   });
 
   @override

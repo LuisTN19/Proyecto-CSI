@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../widgets/fondo_degradado_scaffold.dart';
 import '../widgets/campo_texto_widget.dart';
 
@@ -23,6 +24,7 @@ class _RegistroViewState extends State<RegistroView> {
 
   String mensaje_de_error = "";
 
+  //----------------------------------------------------------------------------
 
   void _registrarse() async {
     String nombre = _nombreController.text;
@@ -39,8 +41,9 @@ class _RegistroViewState extends State<RegistroView> {
       return;
     }
 
-    // LLAMADA AL SERVICIO
+
     bool registroExitoso = await LoginService().registrar(nombre, email, pass1);
+
 
     if (registroExitoso) {
       if (mounted) {
@@ -54,6 +57,8 @@ class _RegistroViewState extends State<RegistroView> {
       setState(() { mensaje_de_error = "Error al registrar usuario"; });
     }
   }
+
+  //----------------------------------------------------------------------------
 
 
   @override

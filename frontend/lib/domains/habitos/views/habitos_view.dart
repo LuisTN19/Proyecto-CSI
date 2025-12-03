@@ -110,6 +110,7 @@ class _HabitosViewState extends State<HabitosView> {
               },
             ),
 
+            //..................................................................
 
             ListView.builder(                                                   //COMPLETADOS
               itemCount: listaCompletados.length,

@@ -7,18 +7,22 @@ class DetallePlatoView extends StatelessWidget {
   final String nombre;
   final String? imagenUrl; // 💡 1. NUEVO: Recibimos la URL de la imagen (opcional)
 
-  // Datos simulados (Hardcoded por ahora)
-  final String descripcion = "Un plato delicioso y tradicional, perfecto para cualquier ocasión. Se cocina a fuego lento para mantener todo el sabor.";
-  final List<String> ingredientes = ["Pollo", "Aceite", "Ajo", "Sal", "Pimienta", "Laurel"];
+  final String descripcion;
+  final List<String> ingredientes;
+  final String tiempo;
+  final String calorias;
+  final double estrellas;
 
-  final String tiempo = "45 min";
-  final String calorias = "450 kcal";
-  final String dificultad = "Media";
 
   DetallePlatoView({
     super.key,
     required this.nombre,
     this.imagenUrl, // 💡 2. AÑADIDO AL CONSTRUCTOR
+    required this.descripcion,
+    required this.ingredientes,
+    required this.tiempo,
+    required this.calorias,
+    required this.estrellas,
   });
 
   @override
@@ -27,7 +31,7 @@ class DetallePlatoView extends StatelessWidget {
 
       appBar: AppBar(
         title: Text(nombre),
-        backgroundColor: Colors.orange,
+        //backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -183,7 +187,6 @@ class DetallePlatoView extends StatelessWidget {
                   children: [
                     _DatoIcono(Icons.access_time, tiempo),
                     _DatoIcono(Icons.local_fire_department, calorias),
-                    _DatoIcono(Icons.bar_chart, dificultad),
                   ],
                 ),
               ),

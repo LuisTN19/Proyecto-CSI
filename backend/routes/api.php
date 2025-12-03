@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\HabitoController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\MovimientoController;
+use App\Http\Controllers\PlatoController;
 
 //RUTAS PÚBLICAS
 Route::post('/login', [AuthController::class, 'login']);
@@ -31,5 +32,9 @@ Route::middleware('auth:sanctum')->group(function () {  //si abres esta ruta me 
 
     Route::get('/movimientos', [MovimientoController::class, 'index']);
     Route::post('/movimientos', [MovimientoController::class, 'store']);
+
+    Route::get('/platos', [PlatoController::class, 'index']);        
+    Route::post('/platos', [PlatoController::class, 'store']);       
+    Route::put('/platos/{plato}', [PlatoController::class, 'update']);
 
 });

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:tugestor/core/widgets/menu_inferior_widget.dart';
-import 'package:tugestor/domains/finanzas/widgets/crear_movimientos_widget.dart';
+
+import '../../../core/widgets/menu_inferior_widget.dart';
 import '../widgets/boton_grande_widget.dart';
 import '../widgets/movimiento_card_widget.dart';
+import '../widgets/crear_movimientos_widget.dart';
+
 import '../services/finanzas_service.dart';
 
 class FinanzasView extends StatefulWidget {
@@ -15,51 +17,43 @@ class FinanzasView extends StatefulWidget {
 
 class _FinanzasViewState extends State<FinanzasView> {
 
-
+  List<Map<String, dynamic>> listaMovimientos = [];
 
   final _service = FinanzasService();
 
-  // Lista de movimientos (vacía para cargar desde la API)
-  List<Map<String, dynamic>> listaMovimientos = [];
+  //----------------------------------------------------------------------------
 
-  // 💡 ELIMINADO: No usamos 'bool isLoading = true;'
-
-  @override
-  void initState() {
-    super.initState();
-    _cargarMovimientos(); // Cargamos los datos al iniciar la vista
-  }
-
-
-  // --- MÉTODO DE CARGA DE DATOS ---
-  Future<void> _cargarMovimientos() async {
-    // 💡 ELIMINADO: No usamos setState(() => isLoading = true);
-
-    final movimientos = await _service.getMovimientos();
-
-    // Solo actualizamos la lista para que se repinte (setState)
-    setState(() {
-      listaMovimientos = movimientos;
-    });
-  }
-
-  // Calcula el total de todos los gastos (esGasto == true)
   double get totalGastos {
     return listaMovimientos
         .where((m) => m['esGasto'] == true)
         .fold(0.0, (sum, item) => sum + item['cantidad']);
   }
 
-  // Calcula el total de todos los ingresos (esGasto == false)
   double get totalIngresos {
     return listaMovimientos
         .where((m) => m['esGasto'] == false)
         .fold(0.0, (sum, item) => sum + item['cantidad']);
   }
 
-  // Calcula el total neto
   double get totalNeto => totalIngresos - totalGastos;
 
+  //----------------------------------------------------------------------------
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarMovimientos();
+  }
+
+  //GET
+  Future<void> _cargarMovimientos() async {
+    final movimientos = await _service.getMovimientos();
+    setState(() {
+      listaMovimientos = movimientos;
+    });
+  }
+
+  //----------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -74,18 +68,17 @@ class _FinanzasViewState extends State<FinanzasView> {
 
 
     final double totalMovido = totalGastos + totalIngresos;
-
-// Define el valor de las barras
-// Si no hay movimientos, el valor es 0 para evitar división por cero.
     final double valorGastoBarra = totalMovido > 0 ? totalGastos / totalMovido : 0.0;
     final double valorIngresoBarra = totalMovido > 0 ? totalIngresos / totalMovido : 0.0;
+
 
     return DefaultTabController(length: 3,
         child: MenuInferiorWidget(
           colorMAS: Colors.blueAccent,
           pulsarMAS: () => _abrirVentanaCrear(),
 
-          //....................................................................
+          //********************************************************************
+
           appBar: AppBar(
             automaticallyImplyLeading: false, //sin flechita
             bottom: const TabBar(
@@ -99,9 +92,9 @@ class _FinanzasViewState extends State<FinanzasView> {
                 ]
             ),
           ),
-          //....................................................................
 
-          //....................................................................
+          //********************************************************************
+
           body: TabBarView(
             children: [
 
@@ -111,14 +104,14 @@ class _FinanzasViewState extends State<FinanzasView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    Center(
-                      child: Text(                                        //MES
+                    Center(                                                //MES
+                      child: Text(
                         '$nombre_del_mes ${ahora.year}',
                         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                       ),
                     ),
 
-                    //**********************************
+                    //
 
                     Expanded(                                         //RECUADRO
                       flex: 3,
@@ -147,7 +140,7 @@ class _FinanzasViewState extends State<FinanzasView> {
                                   ),
                                   const SizedBox(height: 8),
                                   LinearProgressIndicator(
-                                    value: valorGastoBarra,
+                                    value: valorIngresoBarra,
                                     minHeight: 10,
                                     backgroundColor: Colors.grey.shade300,
                                     color: Colors.green,
@@ -182,13 +175,9 @@ class _FinanzasViewState extends State<FinanzasView> {
                                 ],
                               ),
 
-
-
-
                               const Divider(thickness: 1),
                               Center(
                                 child: Text(
-                                  // 💡 CAMBIO 4: USAR totalNeto
                                   'Total: ${totalNeto.toStringAsFixed(2)}€',
                                   style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                                 ),
@@ -202,7 +191,6 @@ class _FinanzasViewState extends State<FinanzasView> {
 
                     const SizedBox(height: 16),
 
-                    //**********************************
 
                     Expanded(                    //CUADRADOS: resumen y categoría
                       flex: 2,
@@ -235,26 +223,24 @@ class _FinanzasViewState extends State<FinanzasView> {
                 ),
               ),
 
+              //................................................................
 
               _ListaMovimientos(
                 movimientos: listaMovimientos.where((m) => m['esGasto'] == false).toList(),
               ),
 
-// ----------------------------------------------------
-// 💡 PESTAÑA GASTOS
-// ----------------------------------------------------
+              //................................................................
+
               _ListaMovimientos(
                 movimientos: listaMovimientos.where((m) => m['esGasto'] == true).toList(),
               ),           //PESTAÑA GASTOS
             ],
           ),
-          //....................................................................
-
-
         )
     );
-
   }
+
+  //----------------------------------------------------------------------------
 
   void _crearMovimiento(String nombre, double cantidad, String fechaLaravel, bool esGasto) async {
     // Lógica de _crearMovimiento (la que ya tenías, pero ahora recibe fechaLaravel)
@@ -272,14 +258,14 @@ class _FinanzasViewState extends State<FinanzasView> {
     }
   }
 
-
+  //POST
   void _abrirVentanaCrear() {
     showDialog(
       context: context,
       builder: (context) {
-        // 👈 CAMBIO: Instanciamos el StatefulWidget personalizado
+
         return CrearMovimientoWidget(
-          onGuardar: _crearMovimiento, // Le pasamos la función que hace la llamada a la API
+          onGuardar: _crearMovimiento,
         );
       },
     );
@@ -287,6 +273,8 @@ class _FinanzasViewState extends State<FinanzasView> {
 
 }
 
+
+//------------------------------------------------------------------------------
 
 class _ListaMovimientos extends StatelessWidget {
   final List<Map<String, dynamic>> movimientos;

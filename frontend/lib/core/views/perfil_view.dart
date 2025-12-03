@@ -5,8 +5,11 @@ import '../services/login_service.dart';
 
 import '../views/login_view.dart';
 
+
+
 class PerfilView extends StatelessWidget {
   const PerfilView({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +46,7 @@ class PerfilView extends StatelessWidget {
 
             const SizedBox(height: 40),
 
-            // BOTÓN CERRAR SESIÓN (CORREGIDO)
+                                                                // CERRAR SESIÓN
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,

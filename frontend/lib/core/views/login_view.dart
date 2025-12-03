@@ -1,4 +1,5 @@
 import'package:flutter/material.dart';
+
 import '../widgets/fondo_degradado_scaffold.dart';
 import '../widgets/campo_texto_widget.dart';
 
@@ -14,6 +15,7 @@ class LoginView extends StatefulWidget {
   @override
   State<LoginView> createState() => _LoginViewState();
 }
+
 
 class _LoginViewState extends State<LoginView> {
 
@@ -44,6 +46,7 @@ class _LoginViewState extends State<LoginView> {
     }
   }
 
+  //----------------------------------------------------------------------------
 
 
   @override

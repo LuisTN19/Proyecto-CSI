@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:tugestor/core/widgets/domain_card_widget.dart';
 
+import '../widgets/domain_card_widget.dart';
+
+import 'perfil_view.dart';
 import '../../domains/finanzas/views/finanzas_view.dart';
 import '../../domains/habitos/views/habitos_view.dart';
 import '../../domains/comidas/views/comidas_view.dart';
 import '../../domains/agenda/views/agenda_view.dart';
-import 'perfil_view.dart';
+
 
 
 class MenuPrincipal extends StatelessWidget {
