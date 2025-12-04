@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 
 class CestaService {
-  // Usamos ValueNotifier para que la vista sepa cuándo repintarse
-  static final ValueNotifier<List<String>> itemsNotifier = ValueNotifier([]);
+  static final ValueNotifier<List<String>> itemsNotifier = ValueNotifier([]); //ValueNotifier para que la vista sepa cuándo repintarse
 
-  // Añadir ingrediente
+
   static void agregar(String ingrediente) {
     List<String> listaActual = List.from(itemsNotifier.value);
     if (!listaActual.contains(ingrediente)) {
       listaActual.add(ingrediente);
-      itemsNotifier.value = listaActual; // ¡Esto avisa a la vista!
+      itemsNotifier.value = listaActual;
     }
   }
 
-  // Borrar ingrediente
   static void eliminar(String ingrediente) {
     List<String> listaActual = List.from(itemsNotifier.value);
     listaActual.remove(ingrediente);
     itemsNotifier.value = listaActual;
   }
 
-  // Borrar todo
   static void limpiarCesta() {
     itemsNotifier.value = [];
   }

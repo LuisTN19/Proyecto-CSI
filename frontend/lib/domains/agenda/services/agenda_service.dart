@@ -16,7 +16,9 @@ class AgendaService {
     };
   }
 
-  // GET -----------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  // GET
   Future<List<Map<String, dynamic>>> getEventos() async {
     try {
       final respuesta = await http.get(
@@ -45,7 +47,9 @@ class AgendaService {
     }
   }
 
-  // POST ----------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  // POST
   Future<bool> postEvento(String titulo, String fecha) async {
     try {
       final respuesta = await http.post(
@@ -70,7 +74,9 @@ class AgendaService {
     }
   }
 
-// DELETE ----------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  // DELETE
   Future<bool> deleteEvento(int id) async {
     try {
       final respuesta = await http.delete(

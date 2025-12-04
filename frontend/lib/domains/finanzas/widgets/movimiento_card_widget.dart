@@ -22,16 +22,13 @@ class MovimientoCardWidget extends StatelessWidget {
   String get signoMovimiento => esGasto ? "-" : "+";
   IconData get iconoMovimiento => esGasto ? Icons.arrow_upward : Icons.arrow_downward;
 
-  String get fechaFormateada {//para que salga la fecha bien
+  String get fechaFormateada {//para que salga la fecha bien en formato 'dd/MM/yyyy'
     try {
       // 1. Convertir el String ISO 8601 de Laravel a objeto DateTime
       final DateTime dateTime = DateTime.parse(fecha);
 
-      // 2. Formatear al estilo deseado (ej: 20 Nov 2025)
-      // Usaremos 'dd/MM/yyyy' para ser consistentes con lo que escribes.
       return DateFormat('dd/MM/yyyy').format(dateTime);
     } catch (e) {
-      // Fallback si el string no es parseable (aunque no debería pasar)
       return fecha;
     }
   }

@@ -26,7 +26,7 @@ class _FinanzasViewState extends State<FinanzasView> {
   double get totalGastos {
     return listaMovimientos
         .where((m) => m['esGasto'] == true)
-        .fold(0.0, (sum, item) => sum + item['cantidad']);
+        .fold(0.0, (sum, item) => sum + item['cantidad']);    //fold(valor_inicial, (acumulador, elemento_actual) => operación)
   }
 
   double get totalIngresos {
@@ -47,9 +47,9 @@ class _FinanzasViewState extends State<FinanzasView> {
 
   //GET
   Future<void> _cargarMovimientos() async {
-    final movimientos = await _service.getMovimientos();
+    final data = await _service.getMovimientos();
     setState(() {
-      listaMovimientos = movimientos;
+      listaMovimientos = data;
     });
   }
 
@@ -104,14 +104,13 @@ class _FinanzasViewState extends State<FinanzasView> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    Center(                                                //MES
+                    /*Center(                                                //MES
                       child: Text(
                         '$nombre_del_mes ${ahora.year}',
                         style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                       ),
-                    ),
+                    ),*/
 
-                    //
 
                     Expanded(                                         //RECUADRO
                       flex: 3,
@@ -179,7 +178,7 @@ class _FinanzasViewState extends State<FinanzasView> {
                               Center(
                                 child: Text(
                                   'Total: ${totalNeto.toStringAsFixed(2)}€',
-                                  style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
                                 ),
                               ),
 
@@ -225,13 +224,13 @@ class _FinanzasViewState extends State<FinanzasView> {
 
               //................................................................
 
-              _ListaMovimientos(
+              _HistorialMovimientos(
                 movimientos: listaMovimientos.where((m) => m['esGasto'] == false).toList(),
               ),
 
               //................................................................
 
-              _ListaMovimientos(
+              _HistorialMovimientos(
                 movimientos: listaMovimientos.where((m) => m['esGasto'] == true).toList(),
               ),           //PESTAÑA GASTOS
             ],
@@ -242,23 +241,6 @@ class _FinanzasViewState extends State<FinanzasView> {
 
   //----------------------------------------------------------------------------
 
-  void _crearMovimiento(String nombre, double cantidad, String fechaLaravel, bool esGasto) async {
-    // Lógica de _crearMovimiento (la que ya tenías, pero ahora recibe fechaLaravel)
-    final exito = await _service.postMovimiento(nombre, cantidad, fechaLaravel, esGasto);
-
-    if (exito) {
-      await _cargarMovimientos();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Movimiento guardado."), duration: Duration(seconds: 1)),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Error al guardar."), duration: Duration(seconds: 2), backgroundColor: Colors.red),
-      );
-    }
-  }
-
-  //POST
   void _abrirVentanaCrear() {
     showDialog(
       context: context,
@@ -271,15 +253,32 @@ class _FinanzasViewState extends State<FinanzasView> {
     );
   }
 
+  //POST
+  void _crearMovimiento(String nombre, double cantidad, String fechaLaravel, bool esGasto) async {
+
+    final exito = await _service.postMovimiento(nombre, cantidad, fechaLaravel, esGasto);
+
+    if (exito) {
+      await _cargarMovimientos();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Movimiento creado con éxito."), duration: Duration(seconds: 1)),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Error al guardar."), duration: Duration(seconds: 2), backgroundColor: Colors.red),
+      );
+    }
+  }
+
 }
 
 
 //------------------------------------------------------------------------------
 
-class _ListaMovimientos extends StatelessWidget {
+class _HistorialMovimientos extends StatelessWidget {
   final List<Map<String, dynamic>> movimientos;
 
-  const _ListaMovimientos({required this.movimientos});
+  const _HistorialMovimientos({required this.movimientos});
 
   @override
   Widget build(BuildContext context) {
@@ -292,8 +291,10 @@ class _ListaMovimientos extends StatelessWidget {
     return ListView.builder(
       padding: const EdgeInsets.only(top: 8.0),
       itemCount: movimientos.length,
+
       itemBuilder: (context, index) {
         final movimiento = movimientos[index];
+
         return MovimientoCardWidget(
           nombre: movimiento['nombre'],
           cantidad: movimiento['cantidad'],

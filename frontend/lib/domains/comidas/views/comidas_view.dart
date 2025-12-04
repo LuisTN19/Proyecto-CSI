@@ -9,6 +9,8 @@ import '../services/cesta_service.dart';
 import '../services/comidas_service.dart';
 
 
+enum Orden { reciente, alfabetico, estrellas }
+
 class ComidasView extends StatefulWidget {
   const ComidasView({super.key});
 
@@ -19,50 +21,34 @@ class ComidasView extends StatefulWidget {
 
 class _ComidasViewState extends State<ComidasView> {
 
+  List<Map<String, dynamic>> listaPlatos = [];  // todos los platos de la BD
+  List<Map<String, dynamic>> _platosVisibles = [];  // platos q se ven por pantalla (búsqueda)
 
+  final _service = ComidasService();
 
-  final PlatosService _service = PlatosService(); // 💡 1. Instancia del servicio
+  //VARIABLES DE FILTROS
+  String _busqueda = ""; // Lo que escribe el usuario
+  Orden _ordenActual = Orden.reciente; // var para guardar el orden actual
+  bool _soloFavoritos = false;
+  //----------------------------------------------------------------------------
 
-  // 💡 2. Lista vacía al inicio (borra tu lista _platosDeEjemplo con datos falsos)
-  List<Map<String, dynamic>> _misPlatos = [];
-
-  // 💡 3. Cargar datos al iniciar
   @override
   void initState() {
     super.initState();
     _cargarDatos();
   }
 
-  // 💡 4. Función para pedir los platos a Laravel
   void _cargarDatos() async {
     final datos = await _service.getPlatos();
     if (mounted) {
       setState(() {
-        _misPlatos = datos;
+        listaPlatos = datos;
+        _aplicarBusqueda(); //para que respete el orden de busqueda actual
       });
     }
   }
 
   //----------------------------------------------------------------------------
-
-  void _cambiarFavorito(int index) async {
-    final plato = _misPlatos[index];
-    bool nuevoEstado = !plato['favorito'];
-    int idPlato = plato['id']; // Necesitamos el ID que viene de Laravel
-
-    // 1. Cambio visual inmediato (Optimista)
-    setState(() {
-      _misPlatos[index]['favorito'] = nuevoEstado;
-    });
-
-    // 2. Enviar cambio al Backend
-    // Enviamos solo el campo que cambia
-    await _service.updatePlato(idPlato, {'favorito': nuevoEstado});
-
-    // Opcional: _cargarDatos(); // Si quieres asegurar sincronización total
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -92,17 +78,14 @@ class _ComidasViewState extends State<ComidasView> {
           body: TabBarView(
               children: [
 
-
                 Padding(                                                        //PESTAÑA PLATOS
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     children: [
-
                       Row(
                         children: [
 
-                          // BUSCADOR
-                          Expanded(
+                          Expanded( // BUSCADOR
                             child: TextField(
                               decoration: InputDecoration(
                                 hintText: 'Buscar...',
@@ -113,22 +96,49 @@ class _ComidasViewState extends State<ComidasView> {
                                 ),
                                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
                               ),
+
+                              onChanged: (texto) {
+                                _busqueda = texto; // Guardamos el texto
+                                _aplicarBusqueda(); // Ejecutamos el filtro
+                              },
                             ),
                           ),
 
                           const SizedBox(width: 8),
 
-                          // ORDENAR
-                          IconButton(
-                            icon: const Icon(Icons.swap_vert),
-                            onPressed: () {},
+
+                          PopupMenuButton<Orden>( //ORDENAR
+                            icon: Icon(Icons.swap_vert, color: Colors.white),
+                            color: Colors.grey.shade800,
+
+                            onSelected: (Orden nuevoOrden) {
+                              _ordenActual = nuevoOrden;
+                              _aplicarBusqueda();
+                            },
+
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: Orden.reciente,
+                                child: Text("Más recientes", style: TextStyle(color: Colors.white)),
+                              ),
+                              const PopupMenuItem(
+                                value: Orden.alfabetico,
+                                child: Text("Alfabético (A-Z)", style: TextStyle(color: Colors.white)),
+                              ),
+                              const PopupMenuItem(
+                                value: Orden.estrellas,
+                                child: Text("Mejor valorados", style: TextStyle(color: Colors.white)),
+                              ),
+                            ],
                           ),
 
-                          // FAVS
-                          IconButton(
-                            icon: const Icon(Icons.favorite_border),
-                            color: Colors.red,
-                            onPressed: () {},
+
+                          IconButton( // FAVS
+                            icon: Icon(_soloFavoritos ? Icons.favorite : Icons.favorite_border, color: Colors.red),
+                            onPressed: () {
+                              _soloFavoritos = !_soloFavoritos;
+                              _aplicarBusqueda();
+                            },
                           ),
                         ],
                       ),
@@ -140,27 +150,27 @@ class _ComidasViewState extends State<ComidasView> {
                         child: ListView.builder(
                           padding: const EdgeInsets.only(top: 20, bottom: 100),
 
-                          itemCount: _misPlatos.length,
+                          itemCount: _platosVisibles.length,
                           itemBuilder: (context, index) {
-                            final plato = _misPlatos[index];
+                            final plato = _platosVisibles[index];
 
                             return PlatoCardWidget(
+                              imagenUrl: plato['url'],
                               nombre: plato['nombre'],
                               esFavorito: plato['favorito'],
-                              imagenUrl: plato['url'],
-                              placeholderIcon: Icons.restaurant,
+                              estrellas: plato['calificacion'],
+                              icono: Icons.restaurant,
 
-
-                              onToggleFavorite: () {
+                              onFav: () {
                                 _cambiarFavorito(index);
                               },
 
-
-                              onTap: () {
-                                Navigator.push(
+                              onTap: () async {
+                                await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => DetallePlatoView(
+                                      id: plato['id'],
                                       nombre: plato['nombre'],
                                       imagenUrl: plato['url'],
                                       descripcion: plato['descripcion'] ?? "Sin descripción",
@@ -168,9 +178,11 @@ class _ComidasViewState extends State<ComidasView> {
                                       tiempo: plato['tiempo'] ?? "N/A",
                                       calorias: plato['calorias'] ?? "N/A",
                                       estrellas: (plato['calificacion'] ?? 0).toDouble(),
+                                      esFavorito: plato['favorito'],
                                     ),
                                   ),
                                 );
+                                _cargarDatos();
                               },
                             );
                           },
@@ -202,21 +214,21 @@ class _ComidasViewState extends State<ComidasView> {
 
                     return Column(
                       children: [
+
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text("Tienes ${listaCompra.length} productos", style: const TextStyle(color: Colors.white70)),
+                              Text("Tienes ${listaCompra.length} productos", style: const TextStyle(color: Colors.white70, fontSize: 16)),
                               TextButton(
                                 onPressed: () => CestaService.limpiarCesta(),
-                                child: const Text("Borrar todo", style: TextStyle(color: Colors.redAccent)),
+                                child: const Text("Borrar todo", style: TextStyle(color: Colors.redAccent, fontSize: 16)),
                               )
                             ],
                           ),
                         ),
 
-                        // La Lista
                         Expanded(
                           child: ListView.builder(
                             itemCount: listaCompra.length,
@@ -228,15 +240,14 @@ class _ComidasViewState extends State<ComidasView> {
                                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                 child: ListTile(
-                                  leading: Icon(Icons.radio_button_unchecked, color: Colors.orange.shade400),
 
                                   title: Text(
                                     item,
-                                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                                    style: const TextStyle(color: Colors.white, fontSize: 18),
                                   ),
 
                                   trailing: IconButton(
-                                    icon: const Icon(Icons.close, color: Colors.grey),
+                                    icon: const Icon(Icons.close, color: Colors.orange),
                                     onPressed: () => CestaService.eliminar(item),
                                   ),
                                 ),
@@ -267,15 +278,9 @@ class _ComidasViewState extends State<ComidasView> {
     );
   }
 
-  void _crearPlato(
-      String nombre,
-      String descripcion,
-      List<String> ingredientes,
-      String tiempo,
-      String calorias,
-      double estrellas) async { // 💡 Ahora es async
+  // POST
+  void _crearPlato(String nombre, String descripcion, List<String> ingredientes, String tiempo, String calorias, double estrellas) async {
 
-    // Preparamos el mapa de datos para enviar
     Map<String, dynamic> nuevoPlato = {
       'nombre': nombre,
       'descripcion': descripcion,
@@ -283,17 +288,90 @@ class _ComidasViewState extends State<ComidasView> {
       'tiempo': tiempo,
       'calorias': calorias,
       'calificacion': estrellas,
-      'url': null, // Por ahora null, luego podrías añadir subir foto
+      'url': null,
     };
 
-    // 💡 LLAMADA AL SERVICIO
     bool exito = await _service.postPlato(nuevoPlato);
 
     if (exito) {
-      _cargarDatos(); // Si se guardó bien, recargamos la lista del servidor
+      _cargarDatos();
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Plato creado con éxito")));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error al guardar"), backgroundColor: Colors.red));
     }
   }
+
+  //----------------------------------------------------------------------------
+
+  // PUT
+  void _cambiarFavorito(int index) async {
+    final plato = listaPlatos[index];
+    bool nuevoEstado = !plato['favorito'];
+    int idPlato = plato['id'];
+
+    setState(() {
+      listaPlatos[index]['favorito'] = nuevoEstado;
+    });
+
+    await _service.updatePlato(idPlato, {'favorito': nuevoEstado});
+  }
+
+  //----------------------------------------------------------------------------
+
+  //FUNCIÓN TANTO PARA LA BÚSQUEDA, ORDENACIÓN Y FILTRO DE FAVs
+  void _aplicarBusqueda() {
+    setState(() {
+
+      var listaTemporal = List<Map<String, dynamic>>.from(listaPlatos);
+
+      //BUSQUEDA ************************************************
+      if (_busqueda.isNotEmpty) {
+        listaTemporal = listaTemporal.where((plato) {
+          final nombre = plato['nombre'].toString().toLowerCase();
+          final textoBusqueda = _busqueda.toLowerCase();
+          return nombre.startsWith(textoBusqueda); //para que busque solo por como empieza
+        }).toList();
+      }
+
+      //FAVORITOS *************************************************
+      if (_soloFavoritos) {
+        listaTemporal = listaTemporal.where((plato) {
+          return plato['favorito'] == true || plato['favorito'] == 1;
+        }).toList();
+      }
+
+      //ORDENACIÓN *************************************************
+      switch (_ordenActual) {
+        case Orden.alfabetico:
+        // A -> Z (Ascendente: a contra b)
+          listaTemporal.sort((a, b) {
+            String nombreA = a['nombre'].toString().toLowerCase();
+            String nombreB = b['nombre'].toString().toLowerCase();
+            return nombreA.compareTo(nombreB);
+          });
+          break;
+
+        case Orden.estrellas:
+        // 5 -> 0 (Descendente: b contra a)
+          listaTemporal.sort((a, b) {
+            double ratingA = (a['calificacion'] ?? 0).toDouble();
+            double ratingB = (b['calificacion'] ?? 0).toDouble();
+            return ratingB.compareTo(ratingA);
+          });
+          break;
+
+        case Orden.reciente:
+        // ID más alto primero (Descendente: b contra a)
+          listaTemporal.sort((a, b) {
+            int idA = a['id'];
+            int idB = b['id'];
+            return idB.compareTo(idA);
+          });
+          break;
+      }
+      
+      _platosVisibles = listaTemporal;
+    });
+  }
+
 }

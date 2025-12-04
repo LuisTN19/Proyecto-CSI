@@ -25,14 +25,33 @@ class _AgendaViewState extends State<AgendaView> {
   DateTime _diaActual = DateTime.now();
   DateTime? _diaSeleccionado;
 
-  Map<DateTime, List<String>> _misEventos = {};
+  Map<DateTime, List<String>> listaEventos = {};
 
   final _service = AgendaService();
 
 
   Color _getColor() {
-    return Colors.primaries[Random().nextInt(Colors.primaries.length)];
+    List<Color> coloresOscuros = [
+      Colors.red,
+      Colors.pink,
+      Colors.purple,
+      Colors.deepPurple,
+      Colors.indigo,
+      Colors.blue,
+      Colors.lightBlue,
+      Colors.teal,
+      Colors.green,
+      Colors.lightGreen,
+      Colors.deepOrange,
+      Colors.brown,
+      Colors.blueGrey,
+      Colors.orange,
+    ];
+
+    return coloresOscuros[Random().nextInt(coloresOscuros.length)];
+    //return Colors.primaries[Random().nextInt(Colors.primaries.length)];
   }
+
 
   //----------------------------------------------------------------------------
 
@@ -65,7 +84,7 @@ class _AgendaViewState extends State<AgendaView> {
 
     if (mounted) {
       setState(() {
-        _misEventos = eventosTransformados;
+        listaEventos = eventosTransformados;
       });
     }
   }
@@ -214,7 +233,7 @@ class _AgendaViewState extends State<AgendaView> {
 
   List<String> _obtenerEventosPorDia(DateTime day) {  //para saber si tiene que pintar el puntito
     final dayKey = DateTime.utc(day.year, day.month, day.day);
-    return _misEventos[dayKey] ?? [];
+    return listaEventos[dayKey] ?? [];
   }
 
   //----------------------------------------------------------------------------
@@ -244,7 +263,7 @@ class _AgendaViewState extends State<AgendaView> {
 
     final dayKey = DateTime.utc(_diaSeleccionado!.year, _diaSeleccionado!.month, _diaSeleccionado!.day);
 
-    List<String> titulos = _misEventos[dayKey] ?? [];
+    List<String> titulos = listaEventos[dayKey] ?? [];
     if (titulos.isEmpty) return [];
 
     return titulos.map((titulo) {
@@ -261,7 +280,7 @@ class _AgendaViewState extends State<AgendaView> {
   List<Map<String, dynamic>> _obtenerEventosOrdenados() {
     List<Map<String, dynamic>> listaPlana = [];
 
-    _misEventos.forEach((fecha, titulos) {
+    listaEventos.forEach((fecha, titulos) {
       Color colorAsignado = _getColor();
       for (var titulo in titulos) {
         listaPlana.add({

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
-// Definición del callback que usaremos para devolver los datos al padre
 typedef GuardarMovimientoCallback = void Function(
     String nombre,
     double cantidad,
-    String fechaLaravel, // Fecha ya convertida a formato YYYY-MM-DD
+    String fechaLaravel,
     bool esGasto,
     );
 
@@ -21,21 +20,21 @@ class CrearMovimientoWidget extends StatefulWidget {
 }
 
 class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
-  // --- VARIABLES DE ESTADO INTERNAS ---
+
   String _nombre = "";
   String _cantidadStr = "";
   DateTime _fechaSeleccionada = DateTime.now();
-  bool _esGasto = true; // Por defecto: Gasto
+  bool _esGasto = true;
 
-  // Getter para la fecha en formato DD/MM/AAAA para mostrar en la interfaz
-  String get _fechaMostrar {
+
+  String get _fechaMostrar {                // formato DD/MM/AAAA para mostrar en la interfaz
     return "${_fechaSeleccionada.day.toString().padLeft(2, '0')}/"
         "${_fechaSeleccionada.month.toString().padLeft(2, '0')}/"
         "${_fechaSeleccionada.year}";
   }
 
-  // Getter para la fecha en formato YYYY-MM-DD para enviar a Laravel
-  String get _fechaLaravel {
+
+  String get _fechaLaravel {                // formato YYYY-MM-DD para enviar a Laravel
     return "${_fechaSeleccionada.year}-"
         "${_fechaSeleccionada.month.toString().padLeft(2, '0')}-"
         "${_fechaSeleccionada.day.toString().padLeft(2, '0')}";
@@ -60,9 +59,7 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
 
   // FUNCIÓN PARA GUARDAR Y VALIDAR
   void _guardarMovimiento() {
-    // 1. Validar que los campos no estén vacíos
     if (_nombre.isNotEmpty && _cantidadStr.isNotEmpty) {
-      // 2. Intentar convertir la cantidad a double (manejando ',' y '.')
       final double? cantidadDouble = double.tryParse(_cantidadStr.replaceAll(',', '.'));
 
       if (cantidadDouble != null) {
@@ -70,9 +67,7 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
         widget.onGuardar(_nombre, cantidadDouble, _fechaLaravel, _esGasto);
         Navigator.pop(context); // Cerrar el diálogo
       }
-      // Opcional: Podrías mostrar un error si la cantidad es inválida aquí.
     }
-    // Opcional: Podrías mostrar un error si faltan campos aquí.
   }
 
   @override
@@ -112,11 +107,11 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
             ),
             const SizedBox(height: 20),
 
-            // 2. NOMBRE / DESCRIPCIÓN
+            // 2. NOMBRE
             TextField(
               autofocus: true,
               decoration: const InputDecoration(
-                labelText: "Descripción",
+                labelText: "Nombre",
                 border: OutlineInputBorder(),
               ),
               onChanged: (val) => _nombre = val,

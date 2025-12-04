@@ -102,7 +102,11 @@ class _HabitosViewState extends State<HabitosView> {
                 return HabitosCardWidget(
                   habito: item['nombre'],
                   esta_completado: false,
-                  al_pulsar_check: () => _marcarCheck(item['id'], false),
+
+                  al_pulsar_check: () {
+                    _marcarCheck(item['id'], false);
+                  },
+
                   es_seleccionado: seleccionados.contains(item['id']),
                   hay_seleccion_activa: haySeleccion,
                   seleccionar: () => _multiseleccion(item['id']),
@@ -122,7 +126,10 @@ class _HabitosViewState extends State<HabitosView> {
                   habito: item['nombre'],
                   esta_completado: true,
 
-                  al_pulsar_check: () => _marcarCheck(item['id'], true),
+                  al_pulsar_check: () {
+                    _marcarCheck(item['id'], true);
+                  },
+
                   es_seleccionado: seleccionados.contains(item['id']),
                   hay_seleccion_activa: haySeleccion,
                   seleccionar: () => _multiseleccion(item['id']),
@@ -159,8 +166,16 @@ class _HabitosViewState extends State<HabitosView> {
 
   //PUT
   void _marcarCheck(int id, bool estado) async {
-    await _service.putHabito(id, estado);
-    _cargarDatos();
+
+    bool exito = await _service.putHabito(id, estado);
+
+    if (exito) {
+      _cargarDatos();
+
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Hábito creado con éxito")));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error al guardar"), backgroundColor: Colors.red));
+    }
   }
 
   //----------------------------------------------------------------------------

@@ -43,7 +43,9 @@ class HabitosService {
     }
   }
 
-  // POST-----------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  // POST
   Future<bool> postHabito(String nombre) async {
     try {
       final respuesta = await http.post(
@@ -57,7 +59,9 @@ class HabitosService {
     }
   }
 
-  // PUT------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  // PUT
   Future<bool> putHabito(int id, bool completadoActual) async {
     try {
       final nuevoEstado = !completadoActual;
@@ -75,7 +79,9 @@ class HabitosService {
     }
   }
 
-  // DELETE---------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+  // DELETE
   Future<bool> deleteHabito(int id) async {
     try {
       final respuesta = await http.delete(

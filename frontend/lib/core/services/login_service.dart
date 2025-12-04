@@ -5,7 +5,7 @@ import 'dart:convert'; //para traducir el JSON
 class LoginService {
 
 //static para que el Token y el Usuario sean Memoria Global y no se borren al cambiar de pantalla
-  static Map<String, dynamic>? usuarioLogueado; //caja vacía -> metemos todo lo que Laravel te ha enviado dentro de la variable usuario, Laravel envía esto: { "id": 1, "name": "Admin", "email": "a@a.com", "created_at": "..." }
+  static Map<String, dynamic>? usuarioLogueado; //caja vacía -> metemostodo lo que Laravel te ha enviado dentro de la variable usuario, Laravel envía esto: { "id": 1, "name": "Admin", "email": "a@a.com", "created_at": "..." }
   static String? apiToken;
 
   final String _baseUrl = 'http://10.0.2.2:8000/api';  //laravel en localhost del PC(servidor) pero llamandolo desde el emulador, a la zona de la api (comunicacion frontend-backend)

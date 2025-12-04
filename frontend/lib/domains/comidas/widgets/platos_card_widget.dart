@@ -2,27 +2,113 @@ import 'package:flutter/material.dart';
 
 class PlatoCardWidget extends StatelessWidget {
   final String nombre;
-  final String? imagenUrl; // URL de la imagen (opcional)
-  final IconData placeholderIcon; // Ícono de reserva si no hay imagen
+  final String? imagenUrl;
+  final IconData icono;
   final bool esFavorito;
-  final VoidCallback? onToggleFavorite;
-  final VoidCallback onTap;
+  final double estrellas;
 
-  // ❌ Eliminamos calificacion
-  // final int calificacion;
+  final VoidCallback onFav;
+  final VoidCallback onTap;
 
   const PlatoCardWidget({
     super.key,
     required this.nombre,
     this.imagenUrl,
-    required this.placeholderIcon,
+    required this.icono,
     required this.esFavorito,
-    this.onToggleFavorite,
+    required this.estrellas,
+
+    required this.onFav,
     required this.onTap,
   });
 
-  // Widget auxiliar para el placeholder si no hay imagen
-  Widget _buildPlaceholder() {
+  //----------------------------------------------------------------------------
+
+  @override
+  Widget build(BuildContext context) {
+    final Color colorTexto = Colors.black87;
+    final Color colorNaranja = Colors.orange.shade700;
+
+    const double imagenSize = 60;
+
+    return Card(
+      color: Colors.orange.shade100,
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+
+              ClipRRect(  // IMAGEN O PLACEHOLDER
+                borderRadius: BorderRadius.circular(8),
+                child: imagenUrl != null && imagenUrl!.isNotEmpty
+                    ? Image.network(
+                  imagenUrl!,
+                  width: imagenSize,
+                  height: imagenSize,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => _iconoWidget(),
+                )
+                    : _iconoWidget(),
+              ),
+
+              const SizedBox(width: 20),
+
+              Expanded( // NOMBRE Y Estrellas del plato
+                child: Column(
+                  mainAxisSize: MainAxisSize.min, // Ocupa solo lo necesario
+                  crossAxisAlignment: CrossAxisAlignment.start, // Alineado a la izquierda
+                  children: [
+
+                    // 1. EL NOMBRE (Igual que antes)
+                    Text(
+                      nombre,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: colorTexto,
+                      ),
+                      maxLines: 1, // Recomiendo 1 línea para que no choque con las estrellas
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                    const SizedBox(height: 4), // Un pequeño espacio
+                    // 2. LAS ESTRELLAS (Llamamos a una funcioncita auxiliar)
+                    _buildMiniEstrellas(estrellas),
+                  ],
+                ),
+              ),
+
+
+              IconButton( // FAV
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: Icon(
+                  esFavorito ? Icons.favorite : Icons.favorite_border,
+                  color: esFavorito ? colorNaranja : colorTexto.withOpacity(0.5),
+                  size: 28,
+                ),
+                onPressed: onFav,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  //----------------------------------------------------------------------------
+
+  Widget _iconoWidget() { //widget auxiliar para el icono por si no hay imagen
     final Color colorNaranja = Colors.orange;
     final Color colorTexto = Colors.black87;
 
@@ -34,83 +120,25 @@ class PlatoCardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Center(
-        child: Icon(placeholderIcon, color: colorNaranja, size: 30),
+        child: Icon(icono, color: colorNaranja, size: 30),
       ),
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Colores
-    final Color colorFondoTarjeta = Colors.orange.shade100;
-    final Color colorTexto = Colors.black87;
-    final Color colorNaranja = Colors.orange.shade700;
+  // Función para pintar estrellas pequeñitas
+  Widget _buildMiniEstrellas(double rating) {
+    return Row(
+      children: List.generate(5, (index) {
+        IconData icon = Icons.star_border;
 
-    const double imagenSize = 60;
+        if (rating >= index + 1) {
+          icon = Icons.star;      // Llena
+        } else if (rating >= index + 0.5) {
+          icon = Icons.star_half; // Media
+        }
 
-    return Card(
-      color: colorFondoTarjeta,
-      elevation: 4,
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-
-        // Padding aumentado para dar espacio
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-
-              // 1. IMAGEN O PLACEHOLDER
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: imagenUrl != null && imagenUrl!.isNotEmpty
-                    ? Image.network(
-                  imagenUrl!,
-                  width: imagenSize,
-                  height: imagenSize,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) => _buildPlaceholder(),
-                )
-                    : _buildPlaceholder(),
-              ),
-
-              const SizedBox(width: 20),
-
-              // 2. NOMBRE DEL PLATO
-              Expanded(
-                child: Text(
-                  nombre,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: colorTexto,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-
-              // 3. CORAZÓN DE FAVORITO
-              IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-                icon: Icon(
-                  esFavorito ? Icons.favorite : Icons.favorite_border,
-                  color: esFavorito ? colorNaranja : colorTexto.withOpacity(0.5),
-                  size: 28,
-                ),
-                onPressed: onToggleFavorite,
-              ),
-            ],
-          ),
-        ),
-      ),
+        return Icon(icon, color: Colors.orange, size: 16); // Tamaño 16 queda fino
+      }),
     );
   }
 }
