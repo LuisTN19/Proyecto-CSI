@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/menu_inferior_widget.dart';
+import '../../../core/widgets/seleccion_mixin.dart';
 import '../widgets/habitos_card_widget.dart';
 import '../widgets/crear_habito_widget.dart';
 
@@ -17,15 +18,13 @@ class HabitosView extends StatefulWidget {
 
 
 
-class _HabitosViewState extends State<HabitosView> {
+class _HabitosViewState extends State<HabitosView> with SelectionMixin{
 
   List<Map<String, dynamic>> listaPorHacer = [];
   List<Map<String, dynamic>> listaCompletados = [];
 
   final _service = HabitosService();
 
-  Set<int> seleccionados = {};
-  bool get haySeleccion => seleccionados.isNotEmpty;
 
   //----------------------------------------------------------------------------
 
@@ -68,7 +67,7 @@ class _HabitosViewState extends State<HabitosView> {
           actions: haySeleccion
               ? [
             IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: _borrarSeleccionados),
-            IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: () => setState(() => seleccionados.clear())),
+            IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: limpiarSeleccion),
           ]
               : [],
 
@@ -109,7 +108,7 @@ class _HabitosViewState extends State<HabitosView> {
 
                   es_seleccionado: seleccionados.contains(item['id']),
                   hay_seleccion_activa: haySeleccion,
-                  seleccionar: () => _multiseleccion(item['id']),
+                  seleccionar: () => multiSeleccion(item['id']),
                 );
               },
             ),
@@ -132,7 +131,7 @@ class _HabitosViewState extends State<HabitosView> {
 
                   es_seleccionado: seleccionados.contains(item['id']),
                   hay_seleccion_activa: haySeleccion,
-                  seleccionar: () => _multiseleccion(item['id']),
+                  seleccionar: () => multiSeleccion(item['id']),
                 );
               },
             ),
@@ -180,15 +179,6 @@ class _HabitosViewState extends State<HabitosView> {
 
   //----------------------------------------------------------------------------
 
-  void _multiseleccion(int id) {
-    setState(() {
-      if (seleccionados.contains(id)) {
-        seleccionados.remove(id);
-      } else {
-        seleccionados.add(id);
-      }
-    });
-  }
 
   //DELETE
   void _borrarSeleccionados() {
@@ -205,7 +195,7 @@ class _HabitosViewState extends State<HabitosView> {
             onPressed: () async {
               Navigator.pop(context);
               for (int id in seleccionados) await _service.deleteHabito(id);
-              setState(() => seleccionados.clear());
+              limpiarSeleccion();
               _cargarDatos();
             },
             child: const Text("Borrar", style: TextStyle(color: Colors.red)),
