@@ -77,4 +77,20 @@ class FinanzasService {
       return false;
     }
   }
+
+  //----------------------------------------------------------------------------
+
+  // DELETE
+  Future<bool> deleteMovimiento(int id) async {
+    try {
+      final respuesta = await http.delete(
+        Uri.parse('$_baseUrl/$id'),
+        headers: _token(),
+      );
+      return respuesta.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
 }
+

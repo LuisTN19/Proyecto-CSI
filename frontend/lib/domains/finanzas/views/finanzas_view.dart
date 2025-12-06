@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/menu_inferior_widget.dart';
+import '../../../core/widgets/seleccion_mixin.dart';
 import '../widgets/boton_grande_widget.dart';
 import '../widgets/movimiento_card_widget.dart';
 import '../widgets/crear_movimientos_widget.dart';
@@ -15,7 +16,7 @@ class FinanzasView extends StatefulWidget {
 }
 
 
-class _FinanzasViewState extends State<FinanzasView> {
+class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
 
   List<Map<String, dynamic>> listaMovimientos = [];
 
@@ -42,11 +43,11 @@ class _FinanzasViewState extends State<FinanzasView> {
   @override
   void initState() {
     super.initState();
-    _cargarMovimientos();
+    _cargarDatos();
   }
 
   //GET
-  Future<void> _cargarMovimientos() async {
+  Future<void> _cargarDatos() async {
     final data = await _service.getMovimientos();
     setState(() {
       listaMovimientos = data;
@@ -81,7 +82,21 @@ class _FinanzasViewState extends State<FinanzasView> {
 
           appBar: AppBar(
             automaticallyImplyLeading: false, //sin flechita
-            bottom: const TabBar(
+
+            title: haySeleccion
+                ? Text("${seleccionados.length} seleccionados", style: const TextStyle(color: Colors.white))
+                : null,
+
+            actions: haySeleccion
+                ? [
+              IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: _borrarSeleccionados),
+              IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: limpiarSeleccion),
+            ]
+                : [],
+
+            bottom: haySeleccion
+                ? null
+                : const TabBar(
                 labelColor: Colors.blueAccent,
                 indicatorColor: Colors.blueAccent,
                 labelStyle: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
@@ -224,15 +239,15 @@ class _FinanzasViewState extends State<FinanzasView> {
 
               //................................................................
 
-              _HistorialMovimientos(
-                movimientos: listaMovimientos.where((m) => m['esGasto'] == false).toList(),
+              _construirListaMovimientos(
+                listaMovimientos.where((m) => m['esGasto'] == false).toList(),
               ),
 
               //................................................................
 
-              _HistorialMovimientos(
-                movimientos: listaMovimientos.where((m) => m['esGasto'] == true).toList(),
-              ),           //PESTAÑA GASTOS
+              _construirListaMovimientos(
+                listaMovimientos.where((m) => m['esGasto'] == true).toList(),
+              ),
             ],
           ),
         )
@@ -259,7 +274,7 @@ class _FinanzasViewState extends State<FinanzasView> {
     final exito = await _service.postMovimiento(nombre, cantidad, fechaLaravel, esGasto);
 
     if (exito) {
-      await _cargarMovimientos();
+      await _cargarDatos();
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Movimiento creado con éxito."), duration: Duration(seconds: 1)),
       );
@@ -270,18 +285,9 @@ class _FinanzasViewState extends State<FinanzasView> {
     }
   }
 
-}
+  //----------------------------------------------------------------------------
 
-
-//------------------------------------------------------------------------------
-
-class _HistorialMovimientos extends StatelessWidget {
-  final List<Map<String, dynamic>> movimientos;
-
-  const _HistorialMovimientos({required this.movimientos});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _construirListaMovimientos(List<Map<String, dynamic>> movimientos) {
     if (movimientos.isEmpty) {
       return const Center(
         child: Text("No hay movimientos en esta categoría.", style: TextStyle(color: Colors.grey)),
@@ -294,14 +300,48 @@ class _HistorialMovimientos extends StatelessWidget {
 
       itemBuilder: (context, index) {
         final movimiento = movimientos[index];
+        final id = movimiento['id']; // Aseguramos que tenemos el ID para la selección
 
         return MovimientoCardWidget(
           nombre: movimiento['nombre'],
           cantidad: movimiento['cantidad'],
           fecha: movimiento['fecha'],
           esGasto: movimiento['esGasto'],
+
+          // 💡 Acceden directamente a las propiedades del Mixin
+          es_seleccionado: seleccionados.contains(id),
+          hay_seleccion_activa: haySeleccion,
+          seleccionar: () => multiSeleccion(id),
         );
       },
     );
   }
+
+  //----------------------------------------------------------------------------
+
+  void _borrarSeleccionados() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("¿Borrar?"),
+        content: Text("Se eliminarán ${seleccionados.length} movimientos permanentemente."),
+
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              for (int id in seleccionados) await _service.deleteMovimiento(id);
+              limpiarSeleccion();
+              _cargarDatos();
+            },
+            child: const Text("Borrar", style: TextStyle(color: Colors.red)),
+          ),
+
+        ],
+      ),
+    );
+  }
+
 }

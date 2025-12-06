@@ -27,18 +27,24 @@ class MovimientoController extends Controller
             'es_gasto'   => 'required|boolean', 
         ]);
 
-        // 2. Creación y asignación de valores
         $movimiento = Movimiento::create([
             'nombre'     => $request->nombre,
             'cantidad'   => $request->cantidad,
             'fecha'      => $request->fecha,
             'es_gasto'   => $request->es_gasto,
-            
-            // 💡 Asignación del usuario autenticado (igual que en Hábitos)
             'user_id'    => $request->user()->id, 
         ]);
+        return response()->json($movimiento, 201); 
+    }
 
-        // 3. Respuesta a Flutter
-        return response()->json($movimiento, 201); // 201 Created
+        public function destroy($id)
+    {
+        $movimiento = Movimiento::find($id);
+
+        if ($movimiento) {
+            $movimiento->delete();
+            return response()->json(['mensaje' => 'Evento borrado correctamente'], 200);
+        }
+        return response()->json(['error' => 'No encontrado'], 404);
     }
 }

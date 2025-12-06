@@ -8,12 +8,20 @@ class MovimientoCardWidget extends StatelessWidget {
   final String fecha; // Recibimos el String completo (ej: 2025-11-20T00000000000x)
   final bool esGasto;
 
+  final bool es_seleccionado;
+  final bool hay_seleccion_activa;
+  final VoidCallback seleccionar;
+
   const MovimientoCardWidget({
     super.key,
     required this.nombre,
     required this.cantidad,
     required this.fecha,
     required this.esGasto,
+
+    required this.es_seleccionado,
+    required this.hay_seleccion_activa,
+    required this.seleccionar,
   });
 
 
@@ -38,42 +46,59 @@ class MovimientoCardWidget extends StatelessWidget {
 
 
     return Card(
-      elevation: 1,
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      color: es_seleccionado ? Colors.blue.shade100 : null,
+      elevation: 2,
 
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-
-
-        // IZQUIERDA: Ícono
-        leading: CircleAvatar(
-          backgroundColor: colorMovimiento.withOpacity(0.15),
-          child: Icon(
-            iconoMovimiento,
-            color: colorMovimiento,
-          ),
-        ),
-
-
-        // CENTRO: Título y Fecha
-        title: Text(
-          nombre,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        subtitle: Text(fechaFormateada, style: TextStyle(color: Colors.grey.shade600)), // 💡 USAMOS EL GETTER
-
-
-        // DERECHA: Cantidad con signo
-        trailing: Text(
-          '$signoMovimiento${cantidad.toStringAsFixed(2)}€',
-          style: TextStyle(
-            color: colorMovimiento,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: es_seleccionado
+            ? const BorderSide(color: Colors.blue, width: 2)
+            : BorderSide.none,
       ),
+
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+
+        child: InkWell(
+          onTap: hay_seleccion_activa
+              ? seleccionar
+              : () {},
+          onLongPress: seleccionar,
+
+          borderRadius: BorderRadius.circular(12),
+
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+
+
+            // IZQUIERDA: Ícono
+            leading: CircleAvatar(
+              backgroundColor: colorMovimiento.withOpacity(0.15),
+              child: Icon(
+                iconoMovimiento,
+                color: colorMovimiento,
+              ),
+            ),
+
+
+            // CENTRO: Título y Fecha
+            title: Text(
+              nombre,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            subtitle: Text(fechaFormateada, style: TextStyle(color: Colors.grey.shade600)), // 💡 USAMOS EL GETTER
+
+
+            // DERECHA: Cantidad con signo
+            trailing: Text(
+              '$signoMovimiento${cantidad.toStringAsFixed(2)}€',
+              style: TextStyle(
+                color: colorMovimiento,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
     );
   }
 }

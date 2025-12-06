@@ -15,6 +15,7 @@ class HabitosCardWidget extends StatelessWidget {
     required this.habito,
     required this.esta_completado,
     required this.al_pulsar_check,
+
     required this.es_seleccionado,
     required this.hay_seleccion_activa,
     required this.seleccionar,
