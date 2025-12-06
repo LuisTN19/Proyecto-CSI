@@ -3,6 +3,7 @@ import 'package:table_calendar/table_calendar.dart';//Paquete del calendario
 import 'dart:math'; // Random
 
 import '../../../core/widgets/menu_inferior_widget.dart';
+import '../../../core/widgets/seleccion_mixin.dart';
 import '../widgets/evento_card_widget.dart';
 import '../widgets/crear_evento_widget.dart';
 
@@ -19,13 +20,14 @@ class AgendaView extends StatefulWidget {
 
 
 
-class _AgendaViewState extends State<AgendaView> {
+class _AgendaViewState extends State<AgendaView> with SelectionMixin{
 
   CalendarFormat _formato = CalendarFormat.month;
   DateTime _diaActual = DateTime.now();
   DateTime? _diaSeleccionado;
 
-  Map<DateTime, List<String>> listaEventos = {};
+  //Map<DateTime, List<String>> listaEventos = {};
+  Map<DateTime, List<Map<String, dynamic>>> listaEventos = {};
 
   final _service = AgendaService();
 
@@ -64,7 +66,7 @@ class _AgendaViewState extends State<AgendaView> {
   void _cargarDatos() async {
     final data = await _service.getEventos();
 
-    Map<DateTime, List<String>> eventosTransformados = {};
+    Map<DateTime, List<Map<String, dynamic>>> eventosTransformados = {};
 
     for (var item in data) {
       // 'YYYY-MM-DD' de Laravel a objeto DateTime (fecha UTC)
@@ -73,12 +75,23 @@ class _AgendaViewState extends State<AgendaView> {
       // Corregimos la fecha a la clave UTC (solo día) para que coincida con TableCalendar
       DateTime fechaClave = DateTime.utc(fechaLaravel.year, fechaLaravel.month, fechaLaravel.day);
 
-      String titulo = item['titulo'];
+      /*String titulo = item['titulo'];
 
       if (eventosTransformados[fechaClave] == null) {
         eventosTransformados[fechaClave] = [titulo];
       } else {
         eventosTransformados[fechaClave]!.add(titulo);
+      }*/
+
+      Map<String, dynamic> eventoObjeto = {
+        'id': item['id'],        // ¡AQUÍ GUARDAMOS EL ID!
+        'titulo': item['titulo']
+      };
+
+      if (eventosTransformados[fechaClave] == null) {
+        eventosTransformados[fechaClave] = [eventoObjeto];
+      } else {
+        eventosTransformados[fechaClave]!.add(eventoObjeto);
       }
     }
 
@@ -102,7 +115,21 @@ class _AgendaViewState extends State<AgendaView> {
 
           appBar: AppBar(
             automaticallyImplyLeading: false, //sin flechita
-            bottom: const TabBar(
+
+            title: haySeleccion
+                ? Text("${seleccionados.length} seleccionados", style: const TextStyle(color: Colors.white))
+                : null,
+
+            actions: haySeleccion
+                ? [
+              IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: _borrarSeleccionados),
+              IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: limpiarSeleccion),
+            ]
+                : [],
+
+            bottom: haySeleccion
+                ? null
+                : const TabBar(
                 labelColor: Colors.green,
                 indicatorColor: Colors.green,
                 labelStyle: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
@@ -189,6 +216,10 @@ class _AgendaViewState extends State<AgendaView> {
                                     titulo: evento['titulo'],
                                     fecha: evento['fechaString'],
                                     colorFondo: evento['color'],
+
+                                    es_seleccionado: seleccionados.contains(evento['id']),
+                                    hay_seleccion_activa: haySeleccion,
+                                    seleccionar: () => multiSeleccion(evento['id']),
                                   );
                                 },
                               ),
@@ -215,6 +246,10 @@ class _AgendaViewState extends State<AgendaView> {
                             titulo: evento['titulo'],
                             fecha: evento['fechaString'],
                             colorFondo: evento['color'],
+
+                            es_seleccionado: seleccionados.contains(evento['id']),
+                            hay_seleccion_activa: haySeleccion,
+                            seleccionar: () => multiSeleccion(evento['id']),
                           );
                         },
                       );
@@ -231,7 +266,7 @@ class _AgendaViewState extends State<AgendaView> {
 
   //----------------------------------------------------------------------------
 
-  List<String> _obtenerEventosPorDia(DateTime day) {  //para saber si tiene que pintar el puntito
+  List _obtenerEventosPorDia(DateTime day) {  //para saber si tiene que pintar el puntito
     final dayKey = DateTime.utc(day.year, day.month, day.day);
     return listaEventos[dayKey] ?? [];
   }
@@ -263,12 +298,14 @@ class _AgendaViewState extends State<AgendaView> {
 
     final dayKey = DateTime.utc(_diaSeleccionado!.year, _diaSeleccionado!.month, _diaSeleccionado!.day);
 
-    List<String> titulos = listaEventos[dayKey] ?? [];
-    if (titulos.isEmpty) return [];
+    List<Map<String, dynamic>> eventosDelDia = listaEventos[dayKey] ?? [];
 
-    return titulos.map((titulo) {
+    if (eventosDelDia.isEmpty) return [];
+
+    return eventosDelDia.map((evento) {
       return {
-        'titulo': titulo,
+        'id': evento['id'],
+        'titulo': evento['titulo'],
         'fechaString': "${_diaSeleccionado!.day}/${_diaSeleccionado!.month}/${_diaSeleccionado!.year}",
         'color': _getColor(),
       };
@@ -280,11 +317,12 @@ class _AgendaViewState extends State<AgendaView> {
   List<Map<String, dynamic>> _obtenerEventosOrdenados() {
     List<Map<String, dynamic>> listaPlana = [];
 
-    listaEventos.forEach((fecha, titulos) {
+    listaEventos.forEach((fecha, eventos) {
       Color colorAsignado = _getColor();
-      for (var titulo in titulos) {
+      for (var evento in eventos) {
         listaPlana.add({
-          'titulo': titulo,
+          'id': evento['id'], // 💡 PASAMOS EL ID A LA VISTA
+          'titulo': evento['titulo'],
           'fecha': fecha,
           'fechaString': "${fecha.day}/${fecha.month}/${fecha.year}",
           'color': colorAsignado,
@@ -301,7 +339,36 @@ class _AgendaViewState extends State<AgendaView> {
     return listaPlana;
   }
 
-//----------------------------------------------------------------------------
+  //----------------------------------------------------------------------------
+
+//DELETE
+  void _borrarSeleccionados() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("¿Borrar?"),
+        content: Text("Se eliminarán ${seleccionados.length} eventos permanentemente."),
+
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              for (int id in seleccionados) await _service.deleteEvento(id);
+              limpiarSeleccion();
+              _cargarDatos();
+            },
+            child: const Text("Borrar", style: TextStyle(color: Colors.red)),
+          ),
+
+        ],
+      ),
+    );
+  }
+
+
+
 
 
 }

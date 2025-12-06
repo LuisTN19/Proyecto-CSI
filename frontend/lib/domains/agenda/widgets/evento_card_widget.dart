@@ -7,11 +7,19 @@ class EventoCardWidget extends StatelessWidget {
   final String fecha;
   final Color colorFondo;
 
+  final bool es_seleccionado;
+  final bool hay_seleccion_activa;
+  final VoidCallback seleccionar;
+
   const EventoCardWidget({
     super.key,
     required this.titulo,
     required this.fecha,
     required this.colorFondo,
+
+    required this.es_seleccionado,
+    required this.hay_seleccion_activa,
+    required this.seleccionar,
   });
 
 
@@ -20,47 +28,66 @@ class EventoCardWidget extends StatelessWidget {
 
     return Card(
 
-      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+      /*margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
       elevation: 4,
       color: colorFondo,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
+      ),*/
+      color: es_seleccionado ? Colors.blue.shade100 : colorFondo,
+      elevation: 2,
+
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: es_seleccionado
+            ? const BorderSide(color: Colors.blue, width: 2)
+            : BorderSide.none,
       ),
 
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
 
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      child: InkWell(
+        onTap: hay_seleccion_activa
+            ? seleccionar
+            : () {},
+        onLongPress: seleccionar,
+        borderRadius: BorderRadius.circular(12),
 
-            // TÍTULO DEL EVENTO
-            Text(
-              titulo,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
 
-            // FECHA CON ICONO
-            Row(
-              children: [
-                const Icon(Icons.calendar_today, size: 16, color: Colors.white70),
-                const SizedBox(width: 5),
-                Text(
-                  fecha,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.white,
-                  ),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+
+              // TÍTULO DEL EVENTO
+              Text(
+                titulo,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-              ],
-            ),
-          ],
+              ),
+              const SizedBox(height: 8),
+
+              // FECHA CON ICONO
+              Row(
+                children: [
+                  const Icon(Icons.calendar_today, size: 16, color: Colors.white70),
+                  const SizedBox(width: 5),
+                  Text(
+                    fecha,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

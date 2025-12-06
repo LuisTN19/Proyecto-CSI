@@ -39,7 +39,7 @@ class PlatoController extends Controller
     }
 
     // 3. ACTUALIZAR 
-    public function update(Request $request, Plato $plato)
+    /*public function update(Request $request, Plato $plato)
     {
         if ($plato->user_id !== $request->user()->id) {
             return response()->json(['error' => 'No autorizado'], 403);
@@ -47,6 +47,22 @@ class PlatoController extends Controller
 
         $plato->update($request->all());
 
+        return response()->json($plato);
+    }*/
+        
+
+    public function update(Request $request, $id)
+    {
+        $plato = Plato::find($id);
+
+        if (!$plato) {
+            return response()->json(['error' => 'No encontrado'], 404);
+        }
+        if ($plato->user_id !== $request->user()->id) {
+            return response()->json(['error' => 'No autorizado'], 403);
+        }
+
+        $plato->update($request->all());
         return response()->json($plato);
     }
 
