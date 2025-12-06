@@ -106,6 +106,7 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
                     _marcarCheck(item['id'], false);
                   },
 
+                  //MULTISELECCION
                   es_seleccionado: seleccionados.contains(item['id']),
                   hay_seleccion_activa: haySeleccion,
                   seleccionar: () => multiSeleccion(item['id']),

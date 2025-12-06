@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class HabitosCardWidget extends StatelessWidget {
   final String habito;
   final bool esta_completado;
+
   final VoidCallback al_pulsar_check;
 
   final bool es_seleccionado;

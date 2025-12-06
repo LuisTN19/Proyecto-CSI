@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/menu_inferior_widget.dart';
+import '../../../core/widgets/seleccion_mixin.dart';
 import '../widgets/platos_card_widget.dart';
 import 'detalle_plato_view.dart';
 import '../widgets/crear_plato_widget.dart';
@@ -19,7 +20,7 @@ class ComidasView extends StatefulWidget {
 }
 
 
-class _ComidasViewState extends State<ComidasView> {
+class _ComidasViewState extends State<ComidasView> with SelectionMixin{
 
   List<Map<String, dynamic>> listaPlatos = [];  // todos los platos de la BD
   List<Map<String, dynamic>> _platosVisibles = [];  // platos q se ven por pantalla (búsqueda)
@@ -62,7 +63,21 @@ class _ComidasViewState extends State<ComidasView> {
 
           appBar: AppBar(
             automaticallyImplyLeading: false, //sin flechita
-            bottom: const TabBar(
+
+            title: haySeleccion
+                ? Text("${seleccionados.length} seleccionados", style: const TextStyle(color: Colors.white))
+                : null,
+
+            actions: haySeleccion
+                ? [
+              IconButton(icon: const Icon(Icons.delete, color: Colors.red), onPressed: _borrarSeleccionados),
+              IconButton(icon: const Icon(Icons.close, color: Colors.white), onPressed: limpiarSeleccion),
+            ]
+                : [],
+
+            bottom: haySeleccion
+                ? null
+                : const TabBar(
                 labelColor: Colors.orange,
                 indicatorColor: Colors.orange,
                 labelStyle: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
@@ -162,7 +177,7 @@ class _ComidasViewState extends State<ComidasView> {
                               icono: Icons.restaurant,
 
                               onFav: () {
-                                _cambiarFavorito(index);
+                                _cambiarFavorito(plato['id']);
                               },
 
                               onTap: () async {
@@ -184,6 +199,10 @@ class _ComidasViewState extends State<ComidasView> {
                                 );
                                 _cargarDatos();
                               },
+
+                              es_seleccionado: seleccionados.contains(plato['id']),
+                              hay_seleccion_activa: haySeleccion,
+                              seleccionar: () => multiSeleccion(plato['id']),
                             );
                           },
                         )
@@ -304,14 +323,20 @@ class _ComidasViewState extends State<ComidasView> {
   //----------------------------------------------------------------------------
 
   // PUT
-  void _cambiarFavorito(int index) async {
-    final plato = listaPlatos[index];
-    bool nuevoEstado = !plato['favorito'];
-    int idPlato = plato['id'];
+  void _cambiarFavorito(int idPlato) async {  //Nunca poner index (posición) para modificar datos, siempre el ID del plato. El ID es único y no cambia aunque ordenes la lista mil veces.
+    final int indexReal = listaPlatos.indexWhere((p) => p['id'] == idPlato);
 
-    setState(() {
-      listaPlatos[index]['favorito'] = nuevoEstado;
-    });
+    if (indexReal != -1) {
+
+    }
+      bool nuevoEstado = !listaPlatos[indexReal]['favorito'];
+
+      setState(() {
+
+        listaPlatos[indexReal]['favorito'] = nuevoEstado;
+
+        _aplicarBusqueda();
+      });
 
     await _service.updatePlato(idPlato, {'favorito': nuevoEstado});
   }
@@ -372,6 +397,34 @@ class _ComidasViewState extends State<ComidasView> {
       
       _platosVisibles = listaTemporal;
     });
+  }
+
+  //----------------------------------------------------------------------------
+
+  //DELETE
+  void _borrarSeleccionados() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("¿Borrar?"),
+        content: Text("Se eliminarán ${seleccionados.length} platos permanentemente."),
+
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              for (int id in seleccionados) await _service.deletePlato(id);
+              limpiarSeleccion();
+              _cargarDatos();
+            },
+            child: const Text("Borrar", style: TextStyle(color: Colors.red)),
+          ),
+
+        ],
+      ),
+    );
   }
 
 }

@@ -1,4 +1,4 @@
-import 'dart:convert'; // Necesario para jsonEncode y jsonDecode
+import 'dart:convert'; // para jsonEncode y jsonDecode
 import 'package:http/http.dart' as http;
 import '../../../../core/services/login_service.dart';
 
@@ -94,4 +94,22 @@ class ComidasService {
       return false;
     }
   }
+
+  //----------------------------------------------------------------------------
+
+  //DELETE
+  Future<bool> deletePlato(int id) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/$id'),
+        headers: _token(),
+      );
+
+      return response.statusCode == 200 || response.statusCode == 204;
+    } catch (e) {
+      print("Error DELETE Plato: $e");
+      return false;
+    }
+  }
 }
+

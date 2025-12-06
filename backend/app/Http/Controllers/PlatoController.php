@@ -38,10 +38,9 @@ class PlatoController extends Controller
         return response()->json($plato, 201);
     }
 
-    // 3. ACTUALIZAR (Para el Favorito o editar datos)
+    // 3. ACTUALIZAR 
     public function update(Request $request, Plato $plato)
     {
-        // Seguridad: Solo el dueño puede editar
         if ($plato->user_id !== $request->user()->id) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
@@ -50,4 +49,18 @@ class PlatoController extends Controller
 
         return response()->json($plato);
     }
+
+
+    public function destroy($id)
+    {
+        $plato = Plato::find($id);
+
+        if ($plato) {
+            $plato->delete();
+            return response()->json(['mensaje' => 'Plato borrado correctamente'], 200);
+        }
+        return response()->json(['error' => 'No encontrado'], 404);
+    }
+
+
 }

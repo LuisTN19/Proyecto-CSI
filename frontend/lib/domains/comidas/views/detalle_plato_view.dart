@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:tugestor/domains/comidas/services/comidas_service.dart';
+
 import '../../../core/widgets/menu_inferior_widget.dart';
 
+import '../services/comidas_service.dart';
 import '../services/cesta_service.dart';
 
 
@@ -72,7 +73,9 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
           IconButton(
             icon: const Icon(Icons.delete),
             color: Colors.red,
-            onPressed: () {},
+            onPressed: () {
+              _borrarPlato(context);
+            },
           ),
         ],
       ),
@@ -218,6 +221,29 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
       ),
     );
   }
+
+  //----------------------------------------------------------------------------
+
+  void _borrarPlato(BuildContext context) async {
+    final service = ComidasService();
+    bool exito = await service.deletePlato(widget.id);    // widget pq llega desde fuera, en el paquete widget, en ningun momento se define ne el state
+
+    if (context.mounted) {
+      if (exito) {
+
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Plato eliminado correctamente"))
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Error al eliminar"), backgroundColor: Colors.red)
+        );
+      }
+    }
+  }
+
+  //----------------------------------------------------------------------------
 
   Widget _buildEstrellasReales() {
     List<Widget> stars = [];

@@ -36,5 +36,6 @@ Route::middleware('auth:sanctum')->group(function () {  //si abres esta ruta me 
     Route::get('/platos', [PlatoController::class, 'index']);        
     Route::post('/platos', [PlatoController::class, 'store']);       
     Route::put('/platos/{plato}', [PlatoController::class, 'update']);
+    Route::delete('/platos/{id}', [PlatoController::class, 'destroy']);
 
 });

@@ -10,6 +10,10 @@ class PlatoCardWidget extends StatelessWidget {
   final VoidCallback onFav;
   final VoidCallback onTap;
 
+  final bool es_seleccionado;
+  final bool hay_seleccion_activa;
+  final VoidCallback seleccionar;
+
   const PlatoCardWidget({
     super.key,
     required this.nombre,
@@ -20,6 +24,10 @@ class PlatoCardWidget extends StatelessWidget {
 
     required this.onFav,
     required this.onTap,
+
+    required this.es_seleccionado,
+    required this.hay_seleccion_activa,
+    required this.seleccionar,
   });
 
   //----------------------------------------------------------------------------
@@ -32,14 +40,22 @@ class PlatoCardWidget extends StatelessWidget {
     const double imagenSize = 60;
 
     return Card(
-      color: Colors.orange.shade100,
+      color: es_seleccionado ? Colors.blue.shade100 : Colors.orange.shade100,
       elevation: 4,
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
 
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: es_seleccionado
+          ? RoundedRectangleBorder(
+        side: const BorderSide(color: Colors.blue, width: 2.0),
+        borderRadius: BorderRadius.circular(12),
+      )
+          : RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+
 
       child: InkWell(
-        onTap: onTap,
+        onTap: hay_seleccion_activa ? seleccionar : onTap,
+
+        onLongPress: seleccionar,
         borderRadius: BorderRadius.circular(12),
 
         child: Padding(
