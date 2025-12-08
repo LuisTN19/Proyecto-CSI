@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart'; // paquete para convertir el formaro d ela fecha q recibimos de laravel en un formato amigable
+import 'package:intl/intl.dart'; // paquete para convertir el formaro de la fecha q recibimos de laravel en un formato amigable
 
 class MovimientoCardWidget extends StatelessWidget {
 
@@ -8,6 +8,7 @@ class MovimientoCardWidget extends StatelessWidget {
   final String fecha; // Recibimos el String completo (ej: 2025-11-20T00000000000x)
   final bool esGasto;
 
+  //Multiselección
   final bool es_seleccionado;
   final bool hay_seleccion_activa;
   final VoidCallback seleccionar;
@@ -24,28 +25,32 @@ class MovimientoCardWidget extends StatelessWidget {
     required this.seleccionar,
   });
 
+  //----------------------------------------------------------------------------
 
-  // Variables calculadas
+  // VARIABLES
   Color get colorMovimiento => esGasto ? Colors.red : Colors.green;
   String get signoMovimiento => esGasto ? "-" : "+";
   IconData get iconoMovimiento => esGasto ? Icons.arrow_upward : Icons.arrow_downward;
 
   String get fechaFormateada {//para que salga la fecha bien en formato 'dd/MM/yyyy'
     try {
-      // 1. Convertir el String ISO 8601 de Laravel a objeto DateTime
+      // String ISO 8601 de Laravel -> objeto DateTime
       final DateTime dateTime = DateTime.parse(fecha);
-
       return DateFormat('dd/MM/yyyy').format(dateTime);
+
     } catch (e) {
       return fecha;
     }
   }
+
+  //----------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
 
 
     return Card(
+      //Multiselección----------------------------------------------------------
       color: es_seleccionado ? Colors.blue.shade100 : null,
       elevation: 2,
 
@@ -64,13 +69,15 @@ class MovimientoCardWidget extends StatelessWidget {
               : () {},
           onLongPress: seleccionar,
 
+          //--------------------------------------------------------------------
+
           borderRadius: BorderRadius.circular(12),
 
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
 
 
-            // IZQUIERDA: Ícono
+            // IZQUIERDA: Icono
             leading: CircleAvatar(
               backgroundColor: colorMovimiento.withOpacity(0.15),
               child: Icon(

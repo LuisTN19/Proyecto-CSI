@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../../../core/widgets/menu_inferior_widget.dart';
 import '../../../core/widgets/seleccion_mixin.dart';
+
 import '../widgets/boton_grande_widget.dart';
 import '../widgets/movimiento_card_widget.dart';
 import '../widgets/crear_movimientos_widget.dart';
 
 import '../services/finanzas_service.dart';
+
+import 'resumen_view.dart';
 
 class FinanzasView extends StatefulWidget {
   const FinanzasView({super.key});
@@ -18,25 +21,12 @@ class FinanzasView extends StatefulWidget {
 
 class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
 
-  List<Map<String, dynamic>> listaMovimientos = [];
+  List<Map<String, dynamic>> listaHistorial = [];  //historial completo
+
+  List<Map<String, dynamic>> listaMensual = [];     // para los meses
 
   final _service = FinanzasService();
 
-  //----------------------------------------------------------------------------
-
-  double get totalGastos {
-    return listaMovimientos
-        .where((m) => m['esGasto'] == true)
-        .fold(0.0, (sum, item) => sum + item['cantidad']);    //fold(valor_inicial, (acumulador, elemento_actual) => operación)
-  }
-
-  double get totalIngresos {
-    return listaMovimientos
-        .where((m) => m['esGasto'] == false)
-        .fold(0.0, (sum, item) => sum + item['cantidad']);
-  }
-
-  double get totalNeto => totalIngresos - totalGastos;
 
   //----------------------------------------------------------------------------
 
@@ -48,30 +38,60 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
 
   //GET
   Future<void> _cargarDatos() async {
-    final data = await _service.getMovimientos();
+    final historial = await _service.getMovimientos();
+
     setState(() {
-      listaMovimientos = data;
+      listaHistorial = historial; // Historial (pestañas)
+      listaMensual = historial;  // Mes actual (Inicio), le asiganmos el historial entero, y ya possteriormente nos encargaremos nmanualmente de filtrar por mes actual
     });
   }
 
   //----------------------------------------------------------------------------
 
+  //RECUADRO INICIAL (DATOS DEL MES ACTUAL)
+  final int mesActual = DateTime.now().month;
+  final int annoActual = DateTime.now().year;
+
+  final List<String> meses = const [
+    'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+    'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+  ];
+  late final String nombre_del_mes = meses[mesActual - 1];
+
+  double get totalIngresos {
+    return listaMensual
+        .where((m) => DateTime.parse(m['fecha']).month == mesActual && DateTime.parse(m['fecha']).year == annoActual) //filtra por mes actual
+        .where((m) => m['esGasto'] == false) //filtra por ingreso
+        .fold(0.0, (sum, item) => sum + item['cantidad']); //fold -> acumular progresivamente la variable sum a partir del valor 0.0
+  }
+
+  double get totalGastos {
+    return listaMensual
+        .where((m) => DateTime.parse(m['fecha']).month == mesActual && DateTime.parse(m['fecha']).year == annoActual) //filtra por mes actual
+        .where((m) => m['esGasto'] == true) //filtra por gasto
+        .fold(0.0, (sum, item) => sum + item['cantidad']); //fold -> acumular progresivamente la variable sum a partir del valor 0.0
+  }
+
+  double get totalNeto => totalIngresos - totalGastos;
+
+
+
+  double get totalMovido => totalGastos + totalIngresos;
+  //final double totalMovido = totalGastos + totalIngresos;
+
+  double get valorGastoBarra {
+    return totalMovido > 0 ? totalGastos / totalMovido : 0.0;
+  }
+
+  double get valorIngresoBarra {
+    return totalMovido > 0 ? totalIngresos / totalMovido : 0.0;
+  }
+
+
+  //----------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
-
-    DateTime ahora = DateTime.now();
-    List<String> meses = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    int numero_del_mes = ahora.month;
-    String nombre_del_mes = meses[numero_del_mes - 1];
-
-
-    final double totalMovido = totalGastos + totalIngresos;
-    final double valorGastoBarra = totalMovido > 0 ? totalGastos / totalMovido : 0.0;
-    final double valorIngresoBarra = totalMovido > 0 ? totalIngresos / totalMovido : 0.0;
-
 
     return DefaultTabController(length: 3,
         child: MenuInferiorWidget(
@@ -119,14 +139,6 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
 
-                    /*Center(                                                //MES
-                      child: Text(
-                        '$nombre_del_mes ${ahora.year}',
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                      ),
-                    ),*/
-
-
                     Expanded(                                         //RECUADRO
                       flex: 3,
                       child: Card(
@@ -137,6 +149,13 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+
+                              Center(                                      //MES
+                                child: Text(
+                                  '$nombre_del_mes $annoActual',
+                                  style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
+                                ),
+                              ),
 
 
                               Column(                                 //INGRESOS
@@ -216,7 +235,14 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                               icono: Icons.bar_chart,
                               texto: 'Resumen',
                               color: Colors.purpleAccent,
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ResumenView(service: _service,),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -225,7 +251,7 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                               icono: Icons.grid_view_rounded,
                               texto: 'Categorías',
                               color: Colors.orangeAccent,
-                              onTap: () {},
+                                onTap: () {}
                             ),
                           ),
                         ],
@@ -239,14 +265,14 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
 
               //................................................................
 
-              _construirListaMovimientos(
-                listaMovimientos.where((m) => m['esGasto'] == false).toList(),
+              _construirListaMovimientos(                                         //PESTAÑA INGRESOS
+                listaHistorial.where((m) => m['esGasto'] == false).toList(),
               ),
 
               //................................................................
 
-              _construirListaMovimientos(
-                listaMovimientos.where((m) => m['esGasto'] == true).toList(),
+              _construirListaMovimientos(                                         //PESTAÑAS GASTOS
+                listaHistorial.where((m) => m['esGasto'] == true).toList(),
               ),
             ],
           ),
@@ -256,7 +282,38 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
 
   //----------------------------------------------------------------------------
 
-  void _abrirVentanaCrear() {
+  Widget _construirListaMovimientos(List<Map<String, dynamic>> movimientos) {   // widget para controlar la lista tanto de gastos como de ingresos, con la movimientos_card
+    if (movimientos.isEmpty) {
+      return const Center(
+        child: Text("No hay movimientos en esta categoría.", style: TextStyle(color: Colors.grey)),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 8.0),
+      itemCount: movimientos.length,
+
+      itemBuilder: (context, index) {
+        final movimiento = movimientos[index];
+        final id = movimiento['id']; // Importante: ID para la multiselección
+
+        return MovimientoCardWidget(
+          nombre: movimiento['nombre'],
+          cantidad: movimiento['cantidad'],
+          fecha: movimiento['fecha'],
+          esGasto: movimiento['esGasto'],
+
+          es_seleccionado: seleccionados.contains(id),
+          hay_seleccion_activa: haySeleccion,
+          seleccionar: () => multiSeleccion(id),
+        );
+      },
+    );
+  }
+
+  //----------------------------------------------------------------------------
+
+  void _abrirVentanaCrear() {   //Ventana -> widget -> post
     showDialog(
       context: context,
       builder: (context) {
@@ -274,7 +331,7 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
     final exito = await _service.postMovimiento(nombre, cantidad, fechaLaravel, esGasto);
 
     if (exito) {
-      await _cargarDatos();
+      await _cargarDatos(); //asíncrona: debe completarse antes de que ell código continue. Obv al crear un nuevo mov tendremos que cargar los datos nuevamente
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Movimiento creado con éxito."), duration: Duration(seconds: 1)),
       );
@@ -287,54 +344,28 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
 
   //----------------------------------------------------------------------------
 
-  Widget _construirListaMovimientos(List<Map<String, dynamic>> movimientos) {
-    if (movimientos.isEmpty) {
-      return const Center(
-        child: Text("No hay movimientos en esta categoría.", style: TextStyle(color: Colors.grey)),
-      );
-    }
-
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 8.0),
-      itemCount: movimientos.length,
-
-      itemBuilder: (context, index) {
-        final movimiento = movimientos[index];
-        final id = movimiento['id']; // Aseguramos que tenemos el ID para la selección
-
-        return MovimientoCardWidget(
-          nombre: movimiento['nombre'],
-          cantidad: movimiento['cantidad'],
-          fecha: movimiento['fecha'],
-          esGasto: movimiento['esGasto'],
-
-          // 💡 Acceden directamente a las propiedades del Mixin
-          es_seleccionado: seleccionados.contains(id),
-          hay_seleccion_activa: haySeleccion,
-          seleccionar: () => multiSeleccion(id),
-        );
-      },
-    );
-  }
-
-  //----------------------------------------------------------------------------
-
   void _borrarSeleccionados() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("¿Borrar?"),
         content: Text("Se eliminarán ${seleccionados.length} movimientos permanentemente."),
 
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+          //Cancelar
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text("Cancelar")),
 
+          //Borrar
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               for (int id in seleccionados) await _service.deleteMovimiento(id);
               limpiarSeleccion();
-              _cargarDatos();
+              await _cargarDatos();
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Se ha eliminado correctamente."), duration: Duration(seconds: 1)),
+              );
             },
             child: const Text("Borrar", style: TextStyle(color: Colors.red)),
           ),

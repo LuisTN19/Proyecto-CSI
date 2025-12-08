@@ -158,12 +158,12 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                         ],
                       ),
 
-                      const SizedBox(width: 25),
+                      const SizedBox(height: 16),
 
 
                       Expanded(                                //LISTA DE PLATOS
                         child: ListView.builder(
-                          padding: const EdgeInsets.only(top: 20, bottom: 100),
+                          padding: const EdgeInsets.only(bottom: 100),
 
                           itemCount: _platosVisibles.length,
                           itemBuilder: (context, index) {

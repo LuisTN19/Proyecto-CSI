@@ -28,11 +28,16 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
 
   //Map<DateTime, List<String>> listaEventos = {};
   Map<DateTime, List<Map<String, dynamic>>> listaEventos = {};
+  final Map<int, Color> _coloresCache = {}; //para q el color no este autogenerandose cada 2*3
 
   final _service = AgendaService();
 
 
-  Color _getColor() {
+  Color _getColor(int idEvento) {
+    if (_coloresCache.containsKey(idEvento)) {    //si ya le dimos un color, devuelvelo y no lo cambies
+      return _coloresCache[idEvento]!;
+    }
+
     List<Color> coloresOscuros = [
       Colors.red,
       Colors.pink,
@@ -50,8 +55,14 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
       Colors.orange,
     ];
 
-    return coloresOscuros[Random().nextInt(coloresOscuros.length)];
+
     //return Colors.primaries[Random().nextInt(Colors.primaries.length)];
+    Color nuevoColor = coloresOscuros[Random().nextInt(coloresOscuros.length)];
+
+    // 3. Guárdalo en la memoria para la próxima vez
+    _coloresCache[idEvento] = nuevoColor;
+
+    return nuevoColor;
   }
 
 
@@ -307,7 +318,7 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
         'id': evento['id'],
         'titulo': evento['titulo'],
         'fechaString': "${_diaSeleccionado!.day}/${_diaSeleccionado!.month}/${_diaSeleccionado!.year}",
-        'color': _getColor(),
+        'color': _getColor(evento['id']),
       };
     }).toList();
   }
@@ -318,8 +329,11 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
     List<Map<String, dynamic>> listaPlana = [];
 
     listaEventos.forEach((fecha, eventos) {
-      Color colorAsignado = _getColor();
+
       for (var evento in eventos) {
+
+        Color colorAsignado = _getColor(evento['id']);
+
         listaPlana.add({
           'id': evento['id'], // 💡 PASAMOS EL ID A LA VISTA
           'titulo': evento['titulo'],

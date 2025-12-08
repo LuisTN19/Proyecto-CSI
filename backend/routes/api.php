@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {  //si abres esta ruta me 
     Route::get('/movimientos', [MovimientoController::class, 'index']);
     Route::post('/movimientos', [MovimientoController::class, 'store']);
     Route::delete('/movimientos/{id}', [MovimientoController::class, 'destroy']);
+    Route::get('/movimientos/resumen', [MovimientoController::class, 'resumen']);
 
     Route::get('/platos', [PlatoController::class, 'index']);        
     Route::post('/platos', [PlatoController::class, 'store']);       

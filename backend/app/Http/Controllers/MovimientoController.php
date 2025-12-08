@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+
 use App\Models\Movimiento;
 
 class MovimientoController extends Controller
@@ -17,6 +20,28 @@ class MovimientoController extends Controller
                          ->orderBy('fecha', 'desc') // Ordenar es una buena práctica para listas
                          ->get();
     }
+
+
+    public function resumen(Request $request)
+    {
+        $userId = $request->user()->id;
+
+        $resumenMensual = Movimiento::select(
+            DB::raw('YEAR(fecha) as anno'), 
+            DB::raw('MONTH(fecha) as mes'),
+            DB::raw('SUM(CASE WHEN es_gasto = 0 THEN cantidad ELSE 0 END) as total_ingresos'),
+            DB::raw('SUM(CASE WHEN es_gasto = 1 THEN cantidad ELSE 0 END) as total_gastos')
+        )
+        ->where('user_id', $userId) 
+        ->groupBy(DB::raw('YEAR(fecha)'), DB::raw('MONTH(fecha)')) 
+        ->orderBy('anno', 'desc')
+        ->orderBy('mes', 'desc')
+        ->get();
+
+        return $resumenMensual;
+    }
+
+
 
     public function store(Request $request)
     {

@@ -40,14 +40,34 @@ class FinanzasService {
         }).toList().cast<Map<String, dynamic>>();
 
       } else {
-        print("Error ${respuesta.statusCode}: No autorizado o fallo al cargar movimientos");
         return [];
       }
     } catch (e) {
-      print("Excepción al obtener movimientos: $e");
       return [];
     }
   }
+
+  //----------------------------------------------------------------------------
+
+  Future<List<Map<String, dynamic>>> getResumenMensual() async {
+    try {
+      final respuesta = await http.get(
+        Uri.parse('$_baseUrl/resumen'),
+        headers: _token(),
+      );
+
+      if (respuesta.statusCode == 200) {
+        List<dynamic> datos = jsonDecode(respuesta.body);
+        return datos.cast<Map<String, dynamic>>();
+      }
+
+      return [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+
 
   //----------------------------------------------------------------------------
 
@@ -65,7 +85,6 @@ class FinanzasService {
         },
       );
 
-      print('Respuesta del servidor (POST): ${respuesta.statusCode}');
       if (respuesta.statusCode != 201) {
         print('Cuerpo del error: ${respuesta.body}');
       }
@@ -73,7 +92,6 @@ class FinanzasService {
       return respuesta.statusCode == 201;
 
     } catch (e) {
-      print("Excepción al crear movimiento: $e");
       return false;
     }
   }

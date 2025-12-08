@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 
-typedef GuardarMovimientoCallback = void Function(
-    String nombre,
-    double cantidad,
-    String fechaLaravel,
-    bool esGasto,
-    );
+typedef GuardarMovimientoCallback = void Function(String nombre, double cantidad, String fechaLaravel, bool esGasto, );
 
 class CrearMovimientoWidget extends StatefulWidget {
   final GuardarMovimientoCallback onGuardar;
@@ -26,6 +21,10 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
   DateTime _fechaSeleccionada = DateTime.now();
   bool _esGasto = true;
 
+  //Errores
+  String? _errorNombre;
+  String? _errorCantidad;
+
 
   String get _fechaMostrar {                // formato DD/MM/AAAA para mostrar en la interfaz
     return "${_fechaSeleccionada.day.toString().padLeft(2, '0')}/"
@@ -41,7 +40,7 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
   }
   // ------------------------------------
 
-  // FUNCIÓN PARA SELECCIONAR FECHA
+  // SELECCIONAR FECHA
   Future<void> _seleccionarFecha() async {
     final DateTime? seleccion = await showDatePicker(
       context: context,
@@ -57,16 +56,40 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
     }
   }
 
-  // FUNCIÓN PARA GUARDAR Y VALIDAR
-  void _guardarMovimiento() {
-    if (_nombre.isNotEmpty && _cantidadStr.isNotEmpty) {
-      final double? cantidadDouble = double.tryParse(_cantidadStr.replaceAll(',', '.'));
+  // ------------------------------------
 
-      if (cantidadDouble != null) {
-        // 3. Si la conversión es exitosa, llamar al callback (onGuardar)
-        widget.onGuardar(_nombre, cantidadDouble, _fechaLaravel, _esGasto);
-        Navigator.pop(context); // Cerrar el diálogo
-      }
+  // GUARDAR
+  void _guardarMovimiento() {
+    setState(() {
+      _errorNombre = null;
+      _errorCantidad = null;
+    });
+    bool hayError = false;
+
+
+    if (_nombre.isEmpty) {  //NOMBRE NO VACIO
+      setState(() {
+        _errorNombre = "Introduce un nombre.";
+        hayError = true;
+      });
+    }
+
+    if (_cantidadStr.isEmpty) { //CANTIDAD NO VACIA
+      setState(() {
+        _errorCantidad = "Introduce la cantidad.";
+        hayError = true;
+      });
+    }
+    if (hayError) return;
+
+    final double? cantidadDouble = double.tryParse(_cantidadStr.replaceAll(',', '.'));  //CANTIDAD SEA NUMÉRICA, (se remplaza además cq coma por puntos)
+    if (cantidadDouble == null) {
+      setState(() {
+        _errorCantidad = "La cantidad debe ser un número.";
+      });
+    } else {
+      widget.onGuardar(_nombre, cantidadDouble, _fechaLaravel, _esGasto);
+      Navigator.pop(context);
     }
   }
 
@@ -77,8 +100,10 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+
           children: [
-            // 1. TIPO DE MOVIMIENTO (Gasto/Ingreso)
+
+            // GASTO/INGRESO
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -107,29 +132,34 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
             ),
             const SizedBox(height: 20),
 
-            // 2. NOMBRE
+            // NOMBRE
             TextField(
               autofocus: true,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Nombre",
                 border: OutlineInputBorder(),
+                errorText: _errorNombre,
+                contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
               ),
               onChanged: (val) => _nombre = val,
             ),
             const SizedBox(height: 15),
 
-            // 3. CANTIDAD
+            // CANTIDAD
             TextField(
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Cantidad (€)",
                 border: OutlineInputBorder(),
+                errorText: _errorCantidad,
+                contentPadding: const EdgeInsets.symmetric(vertical: 15.0, horizontal: 10.0),
               ),
               onChanged: (val) => _cantidadStr = val,
             ),
             const SizedBox(height: 15),
 
-            // 4. FECHA (Selector)
+
+            //  FECHA
             InkWell(
               onTap: _seleccionarFecha,
               child: InputDecorator(
@@ -150,14 +180,17 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
       ),
 
       actions: [
+        //Cancelar
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text("Cancelar"),
         ),
+        //Guardar
         ElevatedButton(
-          onPressed: _guardarMovimiento, // Llamamos a nuestra función de guardar
+          onPressed: _guardarMovimiento,
           child: const Text("Guardar"),
         ),
+
       ],
     );
   }
