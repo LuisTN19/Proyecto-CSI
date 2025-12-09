@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CrearHabitoWidget extends StatelessWidget {
+class CrearHabitoWidget extends StatefulWidget {
   final void Function(String) onGuardar;
 
   const CrearHabitoWidget({
@@ -8,11 +8,38 @@ class CrearHabitoWidget extends StatelessWidget {
     required this.onGuardar,
   });
 
+  @override
+  State<CrearHabitoWidget> createState() => _CrearHabitoWidgetState();
+}
+
+class _CrearHabitoWidgetState extends State<CrearHabitoWidget> {
+
+  String _nuevoNombre = "";
+  String? _errorNombre;
+
+  //----------------------------------------------------------------------------
+
+  void _guardarHabito() {
+    setState(() {
+      _errorNombre = null;
+    });
+
+    // 2. Validamos
+    if (_nuevoNombre.trim().isEmpty) {
+      setState(() {
+        _errorNombre = "Introduce el nombre del hábito.";
+      });
+      return;
+    }
+
+    widget.onGuardar(_nuevoNombre);
+    Navigator.pop(context);
+  }
+
+  //----------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
-    String nuevoTexto = "";
-
     return AlertDialog(
 
       title: const Text("Nuevo Hábito"),
@@ -23,8 +50,15 @@ class CrearHabitoWidget extends StatelessWidget {
         children: [
           TextField(
             autofocus: true,
-            decoration: const InputDecoration(hintText: "Escribe el nombre..."),
-            onChanged: (val) => nuevoTexto = val,
+            decoration: InputDecoration(
+              labelText: "Nombre del hábito",
+              border: const OutlineInputBorder(),
+              errorText: _errorNombre,
+            ),
+            onChanged: (val) {
+              _nuevoNombre = val;
+              if (_errorNombre != null) setState(() => _errorNombre = null);
+            },
           ),
         ],
       ),
@@ -37,13 +71,7 @@ class CrearHabitoWidget extends StatelessWidget {
         ),
 
         ElevatedButton(
-          onPressed: () {
-            if (nuevoTexto.isNotEmpty) {
-              onGuardar(nuevoTexto);
-              Navigator.pop(context);
-            }
-          },
-
+          onPressed: _guardarHabito,
           child: const Text("Guardar"),
         ),
       ],

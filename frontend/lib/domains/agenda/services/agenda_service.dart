@@ -33,13 +33,11 @@ class AgendaService {
           return {
             'id': item['id'],
             'titulo': item['titulo'],
-            'fecha': item['fecha'], // La fecha viene como string 'YYYY-MM-DD'
-            // Podrías necesitar colores si quieres que sean fijos por evento (no aleatorios por carga)
-            // 'color': Colors.green.shade100
+            'fecha': item['fecha'], // La fecha viene como string YYYY-MM-DD
+
           };
         }).toList().cast<Map<String, dynamic>>();
       } else {
-        print("Error ${respuesta.statusCode}: No autorizado o fallo al obtener eventos");
         return [];
       }
     } catch (e) {
@@ -60,16 +58,8 @@ class AgendaService {
           'fecha': fecha,
         },
       );
-
-      if (respuesta.statusCode != 201) {
-        print('--- ERROR DE LARAVEL (${respuesta.statusCode}) ---');
-        print('Cuerpo de la respuesta: ${respuesta.body}');
-        print('-------------------------------------------');
-      }
-
       return respuesta.statusCode == 201;
     } catch (e) {
-      print('Excepción al enviar evento: $e');
       return false;
     }
   }

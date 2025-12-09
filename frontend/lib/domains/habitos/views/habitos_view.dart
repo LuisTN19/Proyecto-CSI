@@ -158,8 +158,25 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
 
   //POST
   void _crearHabito(String nombre) async {
-    await _service.postHabito(nombre);
-    _cargarDatos();
+    final exito = await _service.postHabito(nombre);
+
+    if (exito) {
+      _cargarDatos();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Hábito creado con éxito."),
+            duration: Duration(seconds: 1)
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Error al guardar."),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red
+        ),
+      );
+    }
   }
 
   //----------------------------------------------------------------------------
@@ -185,7 +202,7 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
   void _borrarSeleccionados() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("¿Borrar?"),
         content: Text("Se eliminarán ${seleccionados.length} hábitos permanentemente."),
 
@@ -194,10 +211,17 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
 
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               for (int id in seleccionados) await _service.deleteHabito(id);
               limpiarSeleccion();
               _cargarDatos();
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text("Se ha eliminado correctamente."),
+                    duration: Duration(seconds: 1)
+                ),
+              );
             },
             child: const Text("Borrar", style: TextStyle(color: Colors.red)),
           ),

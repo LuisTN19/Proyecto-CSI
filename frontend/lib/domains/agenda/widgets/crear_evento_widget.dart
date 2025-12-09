@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 
-// La función onGuardar va a recibir el título y la fecha en formato YYYY-MM-DD
+// onGuardar recibe el título y la fecha en formato YYYY-MM-DD
 typedef GuardarEventoCallback = void Function(String titulo, String fechaLaravel);
 
 
@@ -26,25 +26,37 @@ class _CrearEventoDialogState extends State<CrearEventoDialog>
   String _nuevoTitulo = "";
   late DateTime _fechaEvento; // Se inicializará en initState
 
+  String? _errorTitulo;
+
   //----------------------------------------------------------------------------
 
   @override
   void initState() {
     super.initState();
-    // Inicializa la fecha con la que viene de la vista o la fecha actual
+    // Inicializar la fecha con la que viene de la vista o la fecha actual
     _fechaEvento = widget.initialDate ?? DateTime.now();
   }
 
   //  GUARDAR Y VALIDAR
   void _guardarEvento() {
-    if (_nuevoTitulo.isEmpty) return;
+    setState(() {
+      _errorTitulo = null;
+    });
 
-    // 1. Convertir la fecha al formato YYYY-MM-DD para Laravel
+    if (_nuevoTitulo.trim().isEmpty) {
+      setState(() {
+        _errorTitulo = "Introduce el título del evento.";
+      });
+      return;
+    }
+
+    //Convertir la fecha al formato YYYY-MM-DD para Laravel
     String fechaLaravel = "${_fechaEvento.year}-"
         "${_fechaEvento.month.toString().padLeft(2, '0')}-"
         "${_fechaEvento.day.toString().padLeft(2, '0')}";
 
     widget.onGuardar(_nuevoTitulo, fechaLaravel);
+    Navigator.pop(context);
   }
 
   //----------------------------------------------------------------------------
@@ -77,10 +89,21 @@ class _CrearEventoDialogState extends State<CrearEventoDialog>
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+
           TextField(
             autofocus: true,
-            onChanged: (val) => _nuevoTitulo = val,
+            decoration: InputDecoration(
+              labelText: "Título del evento",
+              border: const OutlineInputBorder(),
+              errorText: _errorTitulo,
+            ),
+            onChanged: (val) {
+              _nuevoTitulo = val;
+
+              if (_errorTitulo != null) setState(() => _errorTitulo = null);
+            },
           ),
+
           const SizedBox(height: 20),
 
 

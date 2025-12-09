@@ -40,10 +40,12 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
   Future<void> _cargarDatos() async {
     final historial = await _service.getMovimientos();
 
-    setState(() {
-      listaHistorial = historial; // Historial (pestañas)
-      listaMensual = historial;  // Mes actual (Inicio), le asiganmos el historial entero, y ya possteriormente nos encargaremos nmanualmente de filtrar por mes actual
-    });
+    if (mounted) {
+      setState(() {
+        listaHistorial = historial; // Historial (pestañas)
+        listaMensual = historial; // Mes actual (Inicio), le asiganmos el historial entero, y ya possteriormente nos encargaremos nmanualmente de filtrar por mes actual
+      });
+    }
   }
 
   //----------------------------------------------------------------------------

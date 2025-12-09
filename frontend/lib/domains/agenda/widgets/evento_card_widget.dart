@@ -27,13 +27,7 @@ class EventoCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
 
     return Card(
-
-      /*margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-      elevation: 4,
-      color: colorFondo,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),*/
+      //Multiselcción-----------------------------------------------------------
       color: es_seleccionado ? Colors.blue.shade100 : colorFondo,
       elevation: 2,
 
@@ -51,6 +45,7 @@ class EventoCardWidget extends StatelessWidget {
             ? seleccionar
             : () {},
         onLongPress: seleccionar,
+        //----------------------------------------------------------------------
         borderRadius: BorderRadius.circular(12),
 
         child: Padding(

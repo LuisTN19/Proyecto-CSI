@@ -26,12 +26,12 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
   DateTime _diaActual = DateTime.now();
   DateTime? _diaSeleccionado;
 
-  //Map<DateTime, List<String>> listaEventos = {};
   Map<DateTime, List<Map<String, dynamic>>> listaEventos = {};
-  final Map<int, Color> _coloresCache = {}; //para q el color no este autogenerandose cada 2*3
+  final Map<int, Color> _coloresCache = {}; //para q el color no este autogenerandose cada 2por3
 
   final _service = AgendaService();
 
+  //----------------------------------------------------------------------------
 
   Color _getColor(int idEvento) {
     if (_coloresCache.containsKey(idEvento)) {    //si ya le dimos un color, devuelvelo y no lo cambies
@@ -54,14 +54,9 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
       Colors.blueGrey,
       Colors.orange,
     ];
-
-
     //return Colors.primaries[Random().nextInt(Colors.primaries.length)];
     Color nuevoColor = coloresOscuros[Random().nextInt(coloresOscuros.length)];
-
-    // 3. Guárdalo en la memoria para la próxima vez
     _coloresCache[idEvento] = nuevoColor;
-
     return nuevoColor;
   }
 
@@ -77,28 +72,22 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
   void _cargarDatos() async {
     final data = await _service.getEventos();
 
-    Map<DateTime, List<Map<String, dynamic>>> eventosTransformados = {};
+    Map<DateTime, List<Map<String, dynamic>>> eventosTransformados = {};  //para agrupar los eventos ya con la fecha normaizada de mismo dia
 
     for (var item in data) {
-      // 'YYYY-MM-DD' de Laravel a objeto DateTime (fecha UTC)
+      // 'YYYY-MM-DD' de Laravel -> objeto DateTime (fecha UTC)
       DateTime fechaLaravel = DateTime.parse(item['fecha']).toUtc();
 
-      // Corregimos la fecha a la clave UTC (solo día) para que coincida con TableCalendar
+      // Normalizar la fecha (Quitar horas/minutos/segundos)
       DateTime fechaClave = DateTime.utc(fechaLaravel.year, fechaLaravel.month, fechaLaravel.day);
 
-      /*String titulo = item['titulo'];
-
-      if (eventosTransformados[fechaClave] == null) {
-        eventosTransformados[fechaClave] = [titulo];
-      } else {
-        eventosTransformados[fechaClave]!.add(titulo);
-      }*/
-
+      //Crear el objeto
       Map<String, dynamic> eventoObjeto = {
-        'id': item['id'],        // ¡AQUÍ GUARDAMOS EL ID!
+        'id': item['id'],
         'titulo': item['titulo']
       };
 
+      // los agrupa por dias
       if (eventosTransformados[fechaClave] == null) {
         eventosTransformados[fechaClave] = [eventoObjeto];
       } else {
@@ -284,26 +273,6 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
 
   //----------------------------------------------------------------------------
 
-  void _abrirVentanaCrear(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return CrearEventoDialog(
-          onGuardar: _crearEvento,
-          initialDate: _diaSeleccionado, //para q salga del tiron el dia q tiene en la ventana
-        );
-      },
-    );
-  }
-
-  //POST
-  void _crearEvento(String titulo, String fechaLaravel) async {
-    await _service.postEvento(titulo, fechaLaravel);
-    _cargarDatos();
-  }
-
-  //----------------------------------------------------------------------------
-
   List<Map<String, dynamic>> _obtenerEventosDelDiaSeleccionado() {
     if (_diaSeleccionado == null) return [];
 
@@ -335,7 +304,7 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
         Color colorAsignado = _getColor(evento['id']);
 
         listaPlana.add({
-          'id': evento['id'], // 💡 PASAMOS EL ID A LA VISTA
+          'id': evento['id'],
           'titulo': evento['titulo'],
           'fecha': fecha,
           'fechaString': "${fecha.day}/${fecha.month}/${fecha.year}",
@@ -355,11 +324,48 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
 
   //----------------------------------------------------------------------------
 
+  void _abrirVentanaCrear(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CrearEventoDialog(
+          onGuardar: _crearEvento,
+          initialDate: _diaSeleccionado, //para q salga del tiron el dia q tiene en la ventana
+        );
+      },
+    );
+  }
+
+  //POST
+  void _crearEvento(String titulo, String fechaLaravel) async {
+    final exito = await _service.postEvento(titulo, fechaLaravel);
+
+    if (exito) {
+      _cargarDatos();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Evento creado con éxito."),
+            duration: Duration(seconds: 1)
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text("Error al guardar."),
+            duration: Duration(seconds: 2),
+            backgroundColor: Colors.red
+        ),
+      );
+    }
+  }
+
+  //----------------------------------------------------------------------------
+
 //DELETE
   void _borrarSeleccionados() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("¿Borrar?"),
         content: Text("Se eliminarán ${seleccionados.length} eventos permanentemente."),
 
@@ -368,10 +374,17 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
 
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               for (int id in seleccionados) await _service.deleteEvento(id);
               limpiarSeleccion();
               _cargarDatos();
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text("Se ha eliminado correctamente."),
+                    duration: Duration(seconds: 1)
+                ),
+              );
             },
             child: const Text("Borrar", style: TextStyle(color: Colors.red)),
           ),
@@ -380,9 +393,5 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
       ),
     );
   }
-
-
-
-
 
 }

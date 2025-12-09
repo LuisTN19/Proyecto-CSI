@@ -84,13 +84,7 @@ class FinanzasService {
           'es_gasto': esGasto ? '1' : '0',
         },
       );
-
-      if (respuesta.statusCode != 201) {
-        print('Cuerpo del error: ${respuesta.body}');
-      }
-
       return respuesta.statusCode == 201;
-
     } catch (e) {
       return false;
     }
