@@ -1,35 +1,26 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/menu_inferior_widget.dart';
+import '../widgets/crear_plato_widget.dart';
 
 import '../services/comidas_service.dart';
 import '../services/cesta_service.dart';
 
 
-class DetallePlatoView extends StatefulWidget {
 
+class DetallePlatoView extends StatefulWidget {
+  //atribuots que recibe esta vista, tienen el valor que le pasa comidas_view
   final int id;
-  final String nombre;
   final String? imagenUrl;
+  final String nombre;
+  final bool esFavorito;
+  final double estrellas;
   final String descripcion;
   final List<String> ingredientes;
   final String tiempo;
   final String calorias;
-  final double estrellas;
-  final bool esFavorito;
 
-  DetallePlatoView({
-    super.key,
-    required this.id,
-    required this.nombre,
-    this.imagenUrl,
-    required this.descripcion,
-    required this.ingredientes,
-    required this.tiempo,
-    required this.calorias,
-    required this.estrellas,
-    required this.esFavorito,
-  });
+  DetallePlatoView({super.key, required this.id, this.imagenUrl, required this.nombre, required this.esFavorito, required this.estrellas, required this.descripcion, required this.ingredientes, required this.tiempo, required this.calorias,});
 
   @override
   State<DetallePlatoView> createState() => _DetallePlatoViewState();
@@ -37,22 +28,29 @@ class DetallePlatoView extends StatefulWidget {
 
 class _DetallePlatoViewState extends State<DetallePlatoView> {
 
+  //Variables locales, para poder ver los cambio al editar
+  String? _imagenUrl;
+  late String _nombre;  //late: pq se inicializarán más tarde, en el inistate
   late bool _estaEnFavoritos;
+  late double _estrellas;
+  late String _descripcion;
+  late List<String> _ingredientes;
+  late String _tiempo;
+  late String _calorias;
+
 
   @override
   void initState() {
     super.initState();
+    //Inicialziamos als variables locales con los datos que nos llegan
+    _imagenUrl = widget.imagenUrl; // widget pq llega desde fuera, en el paquete widget, en ningun momento se define en el state
+    _nombre = widget.nombre;
     _estaEnFavoritos = widget.esFavorito;
-  }
-
-  void _cambiarFavorito() async {
-    bool nuevoEstado = !_estaEnFavoritos;
-
-    setState(() {
-      _estaEnFavoritos = nuevoEstado;
-    });
-
-    await ComidasService().updatePlato(widget.id, {'favorito': nuevoEstado});
+    _estrellas = widget.estrellas;
+    _descripcion = widget.descripcion;
+    _ingredientes = List.from(widget.ingredientes);
+    _tiempo = widget.tiempo;
+    _calorias = widget.calorias;
   }
 
   //----------------------------------------------------------------------------
@@ -61,14 +59,15 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
   Widget build(BuildContext context) {
     return MenuInferiorWidget(
 
+      //************************************************************************
       appBar: AppBar(
-        title: Text(widget.nombre),
+        title: Text(_nombre),
         foregroundColor: Colors.white,
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
             color: Colors.white,
-            onPressed: () {},
+            onPressed: _editarPlato,
           ),
           IconButton(
             icon: const Icon(Icons.delete),
@@ -80,6 +79,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
         ],
       ),
 
+      //************************************************************************
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -96,15 +96,15 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
                   decoration: BoxDecoration(
                     color: Colors.orange.shade100,
                   ),
-                  child: widget.imagenUrl != null && widget.imagenUrl!.isNotEmpty
+                  child: _imagenUrl != null && _imagenUrl!.isNotEmpty
                       ? Image.network(
-                    widget.imagenUrl!,
+                    _imagenUrl!,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
                       return const Icon(Icons.restaurant_menu, size: 100, color: Colors.orange);
                     },
                   )
-                      : const Icon(Icons.restaurant_menu, size: 100, color: Colors.orange), // Si es null, mostramos icono
+                      : const Icon(Icons.restaurant_menu, size: 100, color: Colors.orange),
                 ),
               ),
 
@@ -114,13 +114,15 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+
                   Flexible(
                     child: Text(
-                      widget.nombre,
+                      _nombre,
                       style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+
                   IconButton(
                     icon: Icon(
                       _estaEnFavoritos ? Icons.favorite : Icons.favorite_border,
@@ -132,7 +134,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
                 ],
               ),
 
-              // 3. ESTRELLAS
+              // ESTRELLAS -> funcion
               _buildEstrellasReales(),
 
               const SizedBox(height: 24),
@@ -144,7 +146,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
               ),
               const SizedBox(height: 8),
               Text(
-                widget.descripcion,
+                _descripcion,
                 style: const TextStyle(fontSize: 16, color: Colors.white70),
               ),
 
@@ -163,7 +165,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
                     icon: Icon(Icons.shopping_basket, size: 18, color: Colors.orange),
                     label: Text("Añadir todo", style: TextStyle(color: Colors.orange)),
                     onPressed: () {
-                      for (var ing in widget.ingredientes) {
+                      for (var ing in _ingredientes) {
                         CestaService.agregar(ing);
                       }
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -177,7 +179,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
 
               Wrap(
                 spacing: 8.0,
-                children: widget.ingredientes.map((ing) => ActionChip(
+                children: _ingredientes.map((ing) => ActionChip(
                   label: Text(ing),
                   backgroundColor: Colors.grey.shade800,
                   labelStyle: const TextStyle(color: Colors.white),
@@ -197,7 +199,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
 
               const SizedBox(height: 32),
 
-              // DATOS EXTRA
+              // Tiempo, calorías
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -207,13 +209,26 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _DatoIcono(Icons.access_time, widget.tiempo),
-                    _DatoIcono(Icons.local_fire_department, widget.calorias),
+
+                    Column(
+                      children: [
+                        const Icon(Icons.access_time, color: Colors.orange, size: 28),
+                        const SizedBox(height: 4),
+                        Text(_tiempo, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      ],
+                    ),
+
+                    Column(
+                      children: [
+                        const Icon(Icons.local_fire_department, color: Colors.orange, size: 28),
+                        const SizedBox(height: 4),
+                        Text(_calorias, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                      ],
+                    ),
+
                   ],
                 ),
-              ),
-
-              const SizedBox(height: 40),
+              )
 
             ],
           ),
@@ -224,23 +239,12 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
 
   //----------------------------------------------------------------------------
 
-  void _borrarPlato(BuildContext context) async {
-    final service = ComidasService();
-    bool exito = await service.deletePlato(widget.id);    // widget pq llega desde fuera, en el paquete widget, en ningun momento se define ne el state
-
-    if (context.mounted) {
-      if (exito) {
-
-        Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Plato eliminado correctamente"))
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Error al eliminar"), backgroundColor: Colors.red)
-        );
-      }
-    }
+  void _cambiarFavorito() async {
+    bool nuevoEstado = !_estaEnFavoritos;
+    setState(() {
+      _estaEnFavoritos = nuevoEstado;
+    });
+    await ComidasService().putFAV(widget.id, {'favorito': nuevoEstado});
   }
 
   //----------------------------------------------------------------------------
@@ -249,9 +253,9 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
     List<Widget> stars = [];
     for (int i = 1; i <= 5; i++) {
       IconData icon;
-      if (widget.estrellas >= i) {
+      if (_estrellas >= i) {
         icon = Icons.star;
-      } else if (widget.estrellas >= i - 0.5) {
+      } else if (_estrellas >= i - 0.5) {
         icon = Icons.star_half;
       } else {
         icon = Icons.star_border;
@@ -260,22 +264,94 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
     }
     return Row(children: stars);
   }
-}
 
-class _DatoIcono extends StatelessWidget {
-  final IconData icono;
-  final String texto;
+  //----------------------------------------------------------------------------
 
-  const _DatoIcono(this.icono, this.texto);
+  void _editarPlato() {
+    showDialog(
+      context: context,
+      builder: (context) => CrearPlatoWidget(
+        // Pasamos los datos actuales a la ventana
+        inicialImagenUrl: _imagenUrl,
+        inicialNombre: _nombre,
+        inicialEstrellas: _estrellas,
+        inicialDescripcion: _descripcion,
+        inicialIngredientes: _ingredientes,
+        inicialTiempo: _tiempo,
+        inicialCalorias: _calorias,
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icono, color: Colors.orange, size: 28),
-        const SizedBox(height: 4),
-        Text(texto, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-      ],
+
+        onGuardar: (nombre, desc, ingr, tiempo, cal, estrellas, imagen) async {
+          bool exito = await ComidasService().putPLATO(
+              widget.id, nombre, desc, ingr, tiempo, cal, estrellas, imagen
+          );
+
+          if (exito) {
+            setState(() {
+              // Actualizamos la vista al momento
+              _nombre = nombre;
+              _descripcion = desc;
+              _ingredientes = ingr;
+              _tiempo = tiempo;
+              _calorias = cal;
+              _estrellas = estrellas;
+              // La imagen se actualizará si sales y entras o si refrescas, ya que la URL de internet tarda un pelín en cambiar o es la misma.
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Plato actualizado correctamente"))
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Error al actualizar"), backgroundColor: Colors.red)
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  //----------------------------------------------------------------------------
+
+  void _borrarPlato(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("¿Borrar plato?"),
+        content: const Text("Este plato se eliminará permanentemente."),
+
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancelar"),
+          ),
+
+          TextButton(
+            child: const Text("Borrar", style: TextStyle(color: Colors.red)),
+            onPressed: () async {
+              //Cerramos el diálogo primero
+              Navigator.pop(context);
+
+              //Llamamos al servicio
+              final service = ComidasService();
+              bool exito = await service.deletePlato(widget.id);
+
+              //Verificamos el resultado
+              if (context.mounted) {
+                if (exito) {
+                  Navigator.pop(context); // Cierra la VISTA DETALLE para volver a la lista
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Plato eliminado correctamente"))
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Error al eliminar"), backgroundColor: Colors.red)
+                  );
+                }
+              }
+            },
+          ),
+        ],
+      ),
     );
   }
 }

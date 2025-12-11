@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'dart:io'; //para el file
 
 import '../../../core/widgets/menu_inferior_widget.dart';
 import '../../../core/widgets/seleccion_mixin.dart';
 import '../widgets/platos_card_widget.dart';
-import 'detalle_plato_view.dart';
 import '../widgets/crear_plato_widget.dart';
 
-import '../services/cesta_service.dart';
 import '../services/comidas_service.dart';
+import '../services/cesta_service.dart';
+
+import 'detalle_plato_view.dart';
 
 
-enum Orden { reciente, alfabetico, estrellas }
+enum Orden { reciente, alfabetico, estrellas } //enum para los tipos de orden por los que se pueden filtrar la lista de platos
+
 
 class ComidasView extends StatefulWidget {
   const ComidasView({super.key});
@@ -28,9 +31,10 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
   final _service = ComidasService();
 
   //VARIABLES DE FILTROS
-  String _busqueda = ""; // Lo que escribe el usuario
+  String _busqueda = ""; // lo que escribe el usuario
   Orden _ordenActual = Orden.reciente; // var para guardar el orden actual
   bool _soloFavoritos = false;
+
   //----------------------------------------------------------------------------
 
   @override
@@ -44,7 +48,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
     if (mounted) {
       setState(() {
         listaPlatos = datos;
-        _aplicarBusqueda(); //para que respete el orden de busqueda actual
+        _aplicarBusqueda(); //para que respete el orden de busqueda actual e inicialize _platosVisibles por primera vez
       });
     }
   }
@@ -100,15 +104,14 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                       Row(
                         children: [
 
+                          //....................................................
+
                           Expanded( // BUSCADOR
                             child: TextField(
                               decoration: InputDecoration(
                                 hintText: 'Buscar...',
                                 prefixIcon: const Icon(Icons.search),
-
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(30.0),
-                                ),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(30.0),),
                                 contentPadding: const EdgeInsets.symmetric(vertical: 0),
                               ),
 
@@ -151,7 +154,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                           IconButton( // FAVS
                             icon: Icon(_soloFavoritos ? Icons.favorite : Icons.favorite_border, color: Colors.red),
                             onPressed: () {
-                              _soloFavoritos = !_soloFavoritos;
+                              _soloFavoritos = !_soloFavoritos;   //si la pulsa y estban los favoritos se vuelve false / si la pulsan y estaban todos laos platos se vuelve true
                               _aplicarBusqueda();
                             },
                           ),
@@ -160,40 +163,41 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
 
                       const SizedBox(height: 16),
 
+                      //........................................................
 
                       Expanded(                                //LISTA DE PLATOS
                         child: ListView.builder(
                           padding: const EdgeInsets.only(bottom: 100),
 
-                          itemCount: _platosVisibles.length,
+                          itemCount: _platosVisibles.length,    //se inicialize en _aplicarBusqueda(), construimos la lista a partir de los platos que se tengan que ver (row), no de todos
                           itemBuilder: (context, index) {
                             final plato = _platosVisibles[index];
 
-                            return PlatoCardWidget(
+                            return PlatoCardWidget(             //devolvemos una card por cada plato
                               imagenUrl: plato['url'],
                               nombre: plato['nombre'],
-                              esFavorito: plato['favorito'],
                               estrellas: plato['calificacion'],
+                              esFavorito: plato['favorito'],
                               icono: Icons.restaurant,
 
-                              onFav: () {
+                              onFav: () {     //al pulsar el corazon llamamos a la función
                                 _cambiarFavorito(plato['id']);
                               },
 
-                              onTap: () async {
+                              onTap: () async { //al pulsar en la card nos vamos a otra vista (detalle_plato)
                                 await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => DetallePlatoView(
                                       id: plato['id'],
-                                      nombre: plato['nombre'],
                                       imagenUrl: plato['url'],
+                                      nombre: plato['nombre'],
+                                      esFavorito: plato['favorito'],
+                                      estrellas: (plato['calificacion'] ?? 0).toDouble(),
                                       descripcion: plato['descripcion'] ?? "Sin descripción",
                                       ingredientes: List<String>.from(plato['ingredientes'] ?? []),
                                       tiempo: plato['tiempo'] ?? "N/A",
                                       calorias: plato['calorias'] ?? "N/A",
-                                      estrellas: (plato['calificacion'] ?? 0).toDouble(),
-                                      esFavorito: plato['favorito'],
                                     ),
                                   ),
                                 );
@@ -215,10 +219,10 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                 //..............................................................
 
                 ValueListenableBuilder<List<String>>(                           //PESTAÑA CESTA
-                  valueListenable: CestaService.itemsNotifier,
+                  valueListenable: CestaService.itemsNotifier,  //itemsNotifier  -> es una variable (ValueNotifier) dentro del servicio de la cesta que avisa a la interfaz cuando la lista cambia
                   builder: (context, listaCompra, child) {
 
-                    if (listaCompra.isEmpty) {
+                    if (listaCompra.isEmpty) {      //SI ESTÁ VACIA
                       return Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -231,10 +235,10 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                       );
                     }
 
-                    return Column(
+                    return Column(          //SI CONTIENE INGREDIENTES, heremos uso solo de eliminar y limpiarCesta
                       children: [
 
-                        Padding(
+                        Padding(            //contador y pa borrar
                           padding: const EdgeInsets.all(16.0),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -248,7 +252,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                           ),
                         ),
 
-                        Expanded(
+                        Expanded(           //lista de ingredientes
                           child: ListView.builder(
                             itemCount: listaCompra.length,
                             itemBuilder: (context, index) {
@@ -282,63 +286,6 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
           ),
         )
     );
-  }
-
-  //----------------------------------------------------------------------------
-
-  void _abrirVentanaCrear() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return CrearPlatoWidget(
-          onGuardar: _crearPlato,
-        );
-      },
-    );
-  }
-
-  // POST
-  void _crearPlato(String nombre, String descripcion, List<String> ingredientes, String tiempo, String calorias, double estrellas) async {
-
-    Map<String, dynamic> nuevoPlato = {
-      'nombre': nombre,
-      'descripcion': descripcion,
-      'ingredientes': ingredientes,
-      'tiempo': tiempo,
-      'calorias': calorias,
-      'calificacion': estrellas,
-      'url': null,
-    };
-
-    bool exito = await _service.postPlato(nuevoPlato);
-
-    if (exito) {
-      _cargarDatos();
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Plato creado con éxito")));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error al guardar"), backgroundColor: Colors.red));
-    }
-  }
-
-  //----------------------------------------------------------------------------
-
-  // PUT
-  void _cambiarFavorito(int idPlato) async {  //Nunca poner index (posición) para modificar datos, siempre el ID del plato. El ID es único y no cambia aunque ordenes la lista mil veces.
-    final int indexReal = listaPlatos.indexWhere((p) => p['id'] == idPlato);
-
-    if (indexReal != -1) {
-
-    }
-      bool nuevoEstado = !listaPlatos[indexReal]['favorito'];
-
-      setState(() {
-
-        listaPlatos[indexReal]['favorito'] = nuevoEstado;
-
-        _aplicarBusqueda();
-      });
-
-    await _service.updatePlato(idPlato, {'favorito': nuevoEstado});
   }
 
   //----------------------------------------------------------------------------
@@ -394,9 +341,56 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
           });
           break;
       }
-      
-      _platosVisibles = listaTemporal;
+
+      _platosVisibles = listaTemporal;      //inicializar la lista _platosVisibles
     });
+  }
+
+  //----------------------------------------------------------------------------
+
+  void _abrirVentanaCrear() {
+    showDialog(
+      context: context,
+      builder: (context) => CrearPlatoWidget(
+        onGuardar: (nombre, descripcion, ingredientes, tiempo, calorias, estrellas, imagen) {
+          _crearPlato(nombre, descripcion, ingredientes, tiempo, calorias, estrellas, imagen);
+        },
+      ),
+    );
+  }
+
+  // POST
+  void _crearPlato(String nombre, String descripcion, List<String> ingredientes, String tiempo, String calorias, double estrellas, File? imagen) async {
+
+    bool exito = await _service.postPlato(nombre, descripcion, ingredientes, tiempo, calorias, estrellas, imagen);
+
+    if (exito) {
+      _cargarDatos();
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Plato creado con éxito")));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error al guardar"), backgroundColor: Colors.red));
+    }
+  }
+
+  //----------------------------------------------------------------------------
+
+  // PUT
+  void _cambiarFavorito(int idPlato) async {  //Nunca poner index (posición) para modificar datos, siempre el ID del plato. El ID es único y no cambia aunque ordenes la lista mil veces.
+    final int indexReal = listaPlatos.indexWhere((p) => p['id'] == idPlato);
+
+    if (indexReal != -1) {
+
+    }
+      bool nuevoEstado = !listaPlatos[indexReal]['favorito'];
+
+      setState(() {
+
+        listaPlatos[indexReal]['favorito'] = nuevoEstado;
+
+        _aplicarBusqueda();
+      });
+
+    await _service.putFAV(idPlato, {'favorito': nuevoEstado});
   }
 
   //----------------------------------------------------------------------------
@@ -410,14 +404,21 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
         content: Text("Se eliminarán ${seleccionados.length} platos permanentemente."),
 
         actions: [
+          //Cancelar
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
 
+          //Borrar -> service
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
               for (int id in seleccionados) await _service.deletePlato(id);
               limpiarSeleccion();
               _cargarDatos();
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Se ha eliminado correctamente."), duration: Duration(seconds: 1)),
+              );
+
             },
             child: const Text("Borrar", style: TextStyle(color: Colors.red)),
           ),

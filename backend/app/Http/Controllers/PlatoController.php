@@ -11,48 +11,67 @@ class PlatoController extends Controller
 {
     public function index(Request $request)
     {
-        //return $request->user()->platos;   lo dejaba en blanco la lista
-        return Plato::where('user_id', $request->user()->id)->get();
+        return Plato::where('user_id', $request->user()->id)->get(); //por el cast pasa los ingredientes automáticamente a array php y en el return se convierte a json
     }
 
-    // 2. CREAR PLATO
+    // --------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     public function store(Request $request)
     {
         $request->validate([
             'nombre' => 'required|string',
-            'ingredientes' => 'array',
+            //'ingredientes' => 'array',    Ahora esperamos un STRING (formato JSON), no un array directo, como hemos cambiado a Multipart, ahora Flutter envía los ingredientes "empaquetados" como Texto (JSON)
+            'ingredientes' => 'nullable|string',
+            'imagen' => 'nullable|image',
         ]);
 
-        $plato = Plato::create([
+        $datos = $request->all();   //hoja en sucio, vamos a modificar cosas aquí antes de guardarlas definitivamente
+
+        //Ingredientes
+        if ($request->has('ingredientes') && is_string($request->ingredientes)) { //multipart lo envia todo como texto y queremos lista. ANTES sin esto lo enviabamos todo como un bloque JSON (Content-Type: application/json), y laravel solo con esto $request->ingredientes ya lo ponia todo en php
+            $datos['ingredientes'] = json_decode($request->ingredientes, true); //lo convertimos ahora si a array PHP con el json_decode -> ['Pollo', 'Arroz']
+                                                                                //si no lo convirtieramos a array primero, por la propiedad del casts tendría q convertir lo q viene de ingredientes a json, puesto que cree que todo es un array como definimos en el contrato, y tendriamos un string dentro de un string: "\"['Pollo', 'Sal']\""
+        }
+
+        //Foto
+        if ($request->hasFile('imagen')) {
+            $path = $request->file('imagen')->store('platos', 'public'); //genera un hash unico como nombre y lo guarda en el disco duro de tu servidor, dentro de la carpeta storage/app/public/platos.
+            $datos['imagen_url'] = asset('storage/' . $path); //la base de datos no quiere saber dónde está el archivo en el disco duro, quiere saber la dirección web para que el móvil pueda descargarla, asset() convierte la ruta relativa en una URL completa accesible desde internet: Entra: storage/platos/foto.jpg Sale: http://10.0.2.2:8000/storage/platos/foto.jpg//la base de datos no quiere saber dónde está el archivo en el disco duro, quiere saber la dirección web para que el móvil pueda descargarla, asset() convierte la ruta relativa en una URL completa accesible desde internet: Entra: storage/platos/foto.jpg Sale: http://10.0.2.2:8000/storage/platos/foto.jpg
+        } else {
+            $datos['imagen_url'] = null;
+        }
+
+
+        $plato = Plato::create([ //Antes de crearlo y guaradar en la BD -> ORM -> 'ingredientes' => 'array' (CASTS), laravel lo vuelve a pasar a json solo
             'user_id' => $request->user()->id,
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
-            'imagen_url' => $request->imagen_url,
-            'ingredientes' => $request->ingredientes, // Laravel lo pasa a JSON solo
+            'ingredientes' => $datos['ingredientes'], // Usamos el dato corregido
+            'imagen_url' => $datos['imagen_url'],     // Usamos la URL generada
             'tiempo' => $request->tiempo,
             'calorias' => $request->calorias,
             'calificacion' => $request->calificacion ?? 0,
             'favorito' => false,
         ]);
 
-        return response()->json($plato, 201);
+        return response()->json($plato, 201); //Como por internet no pasan Arrays PHP, Laravel convierte todo a Texto JSON.
     }
 
-    // 3. ACTUALIZAR 
-    /*public function update(Request $request, Plato $plato)
-    {
-        if ($plato->user_id !== $request->user()->id) {
-            return response()->json(['error' => 'No autorizado'], 403);
-        }
-
-        $plato->update($request->all());
-
-        return response()->json($plato);
-    }*/
-        
+    //---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     public function update(Request $request, $id)
     {
+        $datos = $request->all();           //en el caso de putFAV solo vendrá con un json pequeñito: {"favorito": true}
+
+        if ($request->has('ingredientes') && is_string($request->ingredientes)) {
+            $datos['ingredientes'] = json_decode($request->ingredientes, true);
+        }
+
+        if ($request->hasFile('imagen')) {
+             $path = $request->file('imagen')->store('platos', 'public');   
+             $datos['imagen_url'] = asset('storage/' . $path);  
+        }
+        
         $plato = Plato::find($id);
 
         if (!$plato) {
@@ -62,10 +81,12 @@ class PlatoController extends Controller
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
-        $plato->update($request->all());
+        /*$plato->update($request->all());          Al usar $request->all() al final, Laravel ignoraba tu variable $datos.Guardaba los ingredientes como texto "['A','B']" (rompiendo la app).No guardaba la URL de la imagen (porque esa URL solo existía dentro de $datos).Con este cambio ($plato->update($datos)), guardas la versión "cocinada" y correcta.*/
+        $plato->update($datos); 
         return response()->json($plato);
     }
 
+    //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     public function destroy($id)
     {

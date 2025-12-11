@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CestaService {
+class CestaService { //Servicio para agregar ingredientes, eliminar ingredientes, limpiar la cesta
   static final ValueNotifier<List<String>> itemsNotifier = ValueNotifier([]); //ValueNotifier para que la vista sepa cuándo repintarse
 
 

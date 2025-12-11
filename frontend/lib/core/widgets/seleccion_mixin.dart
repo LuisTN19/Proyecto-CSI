@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 mixin SelectionMixin<T extends StatefulWidget> on State<T> {
 
   Set<int> seleccionados = {};
-
   bool get haySeleccion => seleccionados.isNotEmpty;
+
 
   void multiSeleccion(int id) {
     setState(() {

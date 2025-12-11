@@ -14,21 +14,7 @@ class PlatoCardWidget extends StatelessWidget {
   final bool hay_seleccion_activa;
   final VoidCallback seleccionar;
 
-  const PlatoCardWidget({
-    super.key,
-    required this.nombre,
-    this.imagenUrl,
-    required this.icono,
-    required this.esFavorito,
-    required this.estrellas,
-
-    required this.onFav,
-    required this.onTap,
-
-    required this.es_seleccionado,
-    required this.hay_seleccion_activa,
-    required this.seleccionar,
-  });
+  const PlatoCardWidget({super.key, required this.nombre, this.imagenUrl, required this.icono, required this.esFavorito, required this.estrellas, required this.onFav, required this.onTap, required this.es_seleccionado, required this.hay_seleccion_activa, required this.seleccionar,});
 
   //----------------------------------------------------------------------------
 
@@ -40,6 +26,7 @@ class PlatoCardWidget extends StatelessWidget {
     const double imagenSize = 60;
 
     return Card(
+      //Multiseleccion----------------------------------------------------------
       color: es_seleccionado ? Colors.blue.shade100 : Colors.orange.shade100,
       elevation: 4,
       margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
@@ -56,6 +43,7 @@ class PlatoCardWidget extends StatelessWidget {
         onTap: hay_seleccion_activa ? seleccionar : onTap,
 
         onLongPress: seleccionar,
+        //----------------------------------------------------------------------
         borderRadius: BorderRadius.circular(12),
 
         child: Padding(
@@ -85,7 +73,7 @@ class PlatoCardWidget extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start, // Alineado a la izquierda
                   children: [
 
-                    // 1. EL NOMBRE (Igual que antes)
+                    //NOMBRE
                     Text(
                       nombre,
                       style: TextStyle(
@@ -93,12 +81,13 @@ class PlatoCardWidget extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                         color: colorTexto,
                       ),
-                      maxLines: 1, // Recomiendo 1 línea para que no choque con las estrellas
+                      maxLines: 1, // para que no choque con las estrellas
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    const SizedBox(height: 4), // Un pequeño espacio
-                    // 2. LAS ESTRELLAS (Llamamos a una funcioncita auxiliar)
+                    const SizedBox(height: 4),
+
+                    //ESTRELLITAS
                     _buildMiniEstrellas(estrellas),
                   ],
                 ),
@@ -141,8 +130,7 @@ class PlatoCardWidget extends StatelessWidget {
     );
   }
 
-  // Función para pintar estrellas pequeñitas
-  Widget _buildMiniEstrellas(double rating) {
+  Widget _buildMiniEstrellas(double rating) { //widget auxiliar para pintar las estrellitas
     return Row(
       children: List.generate(5, (index) {
         IconData icon = Icons.star_border;
