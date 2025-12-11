@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';//Paquete del calendario
-import 'dart:math'; // Random
 
 import '../../../core/widgets/menu_inferior_widget.dart';
 import '../../../core/widgets/seleccion_mixin.dart';
@@ -27,39 +26,30 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
   DateTime? _diaSeleccionado;
 
   Map<DateTime, List<Map<String, dynamic>>> listaEventos = {};
-  final Map<int, Color> _coloresCache = {}; //para q el color no este autogenerandose cada 2por3
 
   final _service = AgendaService();
 
   //----------------------------------------------------------------------------
 
   Color _getColor(int idEvento) {
-    if (_coloresCache.containsKey(idEvento)) {    //si ya le dimos un color, devuelvelo y no lo cambies
-      return _coloresCache[idEvento]!;
-    }
-
-    List<Color> coloresOscuros = [
-      Colors.red,
-      Colors.pink,
-      Colors.purple,
-      Colors.deepPurple,
-      Colors.indigo,
-      Colors.blue,
-      Colors.lightBlue,
-      Colors.teal,
+    List<Color> colores = [
+      Colors.orange,
       Colors.green,
+      Colors.pink,
+      Colors.blue,
+      Colors.red,
+      Colors.purple,
+      Colors.lightBlue,
       Colors.lightGreen,
       Colors.deepOrange,
+      Colors.indigo,
       Colors.brown,
+      Colors.teal,
       Colors.blueGrey,
-      Colors.orange,
+      Colors.deepPurple,
     ];
-    //return Colors.primaries[Random().nextInt(Colors.primaries.length)];
-    Color nuevoColor = coloresOscuros[Random().nextInt(coloresOscuros.length)];
-    _coloresCache[idEvento] = nuevoColor;
-    return nuevoColor;
+    return colores[idEvento % colores.length];      //modulo asegura que el resultado siempre está entre el 0 y el total de colores
   }
-
 
   //----------------------------------------------------------------------------
 
