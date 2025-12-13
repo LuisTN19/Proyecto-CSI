@@ -7,7 +7,7 @@ import '../../../../core/services/login_service.dart';
 
 class HabitosService {
 
-  final String _baseUrl = 'http://10.0.2.2:8000/api/habitos';
+  final String _baseUrl = 'http://192.168.1.170:8000/api/habitos';
 
   Map<String, String> _token() {
     return {

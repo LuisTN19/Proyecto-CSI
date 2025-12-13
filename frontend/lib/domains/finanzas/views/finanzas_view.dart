@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../core/widgets/menu_inferior_widget.dart';
 import '../../../core/widgets/seleccion_mixin.dart';
 
-import '../widgets/boton_grande_widget.dart';
 import '../widgets/movimiento_card_widget.dart';
 import '../widgets/crear_movimientos_widget.dart';
 
@@ -155,7 +154,7 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                               Center(                                      //MES
                                 child: Text(
                                   '$nombre_del_mes $annoActual',
-                                  style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: Colors.white),
+                                  style: const TextStyle(fontSize:26, fontWeight: FontWeight.bold, color: Colors.white),
                                 ),
                               ),
 
@@ -214,7 +213,7 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                               Center(
                                 child: Text(
                                   'Total: ${totalNeto.toStringAsFixed(2)}€',
-                                  style: const TextStyle(fontSize: 36, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                                 ),
                               ),
 
@@ -227,36 +226,40 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                     const SizedBox(height: 16),
 
 
-                    Expanded(                    //CUADRADOS: resumen y categoría
-                      flex: 2,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(
-                            child: BotonGrande(
-                              icono: Icons.bar_chart,
-                              texto: 'Resumen',
-                              color: Colors.purpleAccent,
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ResumenView(service: _service,),
+                    Expanded(     //Resumen
+                      flex: 1,
+                      child: SizedBox.expand(
+                        child: Card(
+                          color: Colors.white,
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ResumenView(service: _service),
+                                ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(16),
+                            child: const Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.bar_chart, size: 65, color: Colors.tealAccent),
+                                SizedBox(height: 12),
+                                Text(
+                                  'Resumen',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.tealAccent
                                   ),
-                                );
-                              },
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: BotonGrande(
-                              icono: Icons.grid_view_rounded,
-                              texto: 'Categorías',
-                              color: Colors.orangeAccent,
-                                onTap: () {}
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
 

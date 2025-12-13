@@ -270,7 +270,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
   void _editarPlato() {
     showDialog(
       context: context,
-      builder: (context) => CrearPlatoWidget(
+      builder: (dialogContext) => CrearPlatoWidget(
         // Pasamos los datos actuales a la ventana
         inicialImagenUrl: _imagenUrl,
         inicialNombre: _nombre,
@@ -297,9 +297,6 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
               _estrellas = estrellas;
               // La imagen se actualizará si sales y entras o si refrescas, ya que la URL de internet tarda un pelín en cambiar o es la misma.
             });
-            ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Plato actualizado correctamente"))
-            );
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text("Error al actualizar"), backgroundColor: Colors.red)
@@ -315,7 +312,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
   void _borrarPlato(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(    //le llamamos dialogContext para no confundirlo con el context de fuera
         title: const Text("¿Borrar plato?"),
         content: const Text("Este plato se eliminará permanentemente."),
 
@@ -329,24 +326,20 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
             child: const Text("Borrar", style: TextStyle(color: Colors.red)),
             onPressed: () async {
               //Cerramos el diálogo primero
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
 
               //Llamamos al servicio
               final service = ComidasService();
               bool exito = await service.deletePlato(widget.id);
 
-              //Verificamos el resultado
-              if (context.mounted) {
-                if (exito) {
-                  Navigator.pop(context); // Cierra la VISTA DETALLE para volver a la lista
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Plato eliminado correctamente"))
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("Error al eliminar"), backgroundColor: Colors.red)
-                  );
-                }
+              if (!mounted) return; //comprobar si la pantalla padre(detalle) sigue viva
+
+              if (exito) {
+                Navigator.pop(context, true); // Cierra la VISTA DETALLE (padre) para volver a la lista
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Error al eliminar"), backgroundColor: Colors.red)
+                );
               }
             },
           ),

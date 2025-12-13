@@ -185,7 +185,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                               },
 
                               onTap: () async { //al pulsar en la card nos vamos a otra vista (detalle_plato)
-                                await Navigator.push(
+                                var resultado = await Navigator.push(     // si resultado recibe true el plato ha sido eliminado correctamente en la pantalla de detalle
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => DetallePlatoView(
@@ -201,6 +201,15 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                                     ),
                                   ),
                                 );
+
+                                if (resultado == true) {
+                                  _cargarDatos();
+                                  if (mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(   //Mostramos el mensaje de plato eliminado aqui
+                                        const SnackBar(content: Text("Plato eliminado"))
+                                    );
+                                  }
+                                }
                                 _cargarDatos();
                               },
 
@@ -399,18 +408,18 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
   void _borrarSeleccionados() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text("¿Borrar?"),
         content: Text("Se eliminarán ${seleccionados.length} platos permanentemente."),
 
         actions: [
           //Cancelar
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text("Cancelar")),
 
           //Borrar -> service
           TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               for (int id in seleccionados) await _service.deletePlato(id);
               limpiarSeleccion();
               _cargarDatos();
