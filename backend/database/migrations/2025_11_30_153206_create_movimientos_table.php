@@ -11,12 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('movimientos', function (Blueprint $table) {
+        Schema::create('Movimiento', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('nombre', 150);
             $table->decimal('cantidad', 10, 2);
             $table->date('fecha');
-            $table->boolean('es_gasto')->default(true);
+            $table->boolean('esGasto')->default(true);
             $table->timestamps();
         });
     }
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('movimientos');
+        Schema::dropIfExists('Movimiento');
     }
 };

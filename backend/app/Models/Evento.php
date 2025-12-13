@@ -9,8 +9,7 @@ class Evento extends Model
 {
     use HasFactory;
 
-    protected $table = 'eventos';
-    
+    protected $table = 'Evento';
     protected $fillable = [
         'titulo',
         'fecha',

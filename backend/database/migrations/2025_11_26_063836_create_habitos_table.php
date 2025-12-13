@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('habitos', function (Blueprint $table) {
+        Schema::create('Habito', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('nombre'); 
-            $table->boolean('completado')->default(false);
+            $table->boolean('esCompletado')->default(false);
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('habitos');
+        Schema::dropIfExists('Habito');
     }
 };

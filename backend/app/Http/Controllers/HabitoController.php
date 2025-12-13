@@ -17,9 +17,9 @@ class HabitoController extends Controller
         $userId = $request->user()->id;
 
         Habito::where('user_id', $userId)
-            ->where('completado', true)
+            ->where('esCompletado', true)
             ->whereDate('updated_at', '<', Carbon::today()) 
-            ->update(['completado' => false]); 
+            ->update(['esCompletado' => false]); 
 
         return Habito::where('user_id', $userId)->get();
     }
@@ -32,7 +32,7 @@ class HabitoController extends Controller
 
         $habito = Habito::create([
             'nombre' => $request->nombre,
-            'completado' => false,
+            'esCompletado' => false,
             'user_id' => $request->user()->id, 
         ]);
 
@@ -46,7 +46,7 @@ class HabitoController extends Controller
         $habito = Habito::find($id);
         
         if ($habito && $habito->user_id == $request->user()->id) {
-            $habito->completado = filter_var($request->completado, FILTER_VALIDATE_BOOLEAN);
+            $habito->esCompletado = filter_var($request->esCompletado, FILTER_VALIDATE_BOOLEAN);
             $habito->save();
 
             return response()->json($habito, 200);

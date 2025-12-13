@@ -9,23 +9,23 @@ class Plato extends Model
 {
     use HasFactory;
 
-    protected $table = 'platos'; 
+    protected $table = 'Plato'; 
     protected $fillable = [
         'user_id',
         'nombre',
         'descripcion',
-        'imagen_url',
+        'imagenUrl',
         'ingredientes',
         'tiempo',
         'calorias',
-        'calificacion',
-        'favorito',
+        'estrellas',
+        'esFavorito',
     ];
 
     protected $casts = [
         'ingredientes' => 'array', 
-        'favorito' => 'boolean',
-        'calificacion' => 'double',
+        'esFavorito' => 'boolean',
+        'estrellas' => 'double',
     ];
 }
 

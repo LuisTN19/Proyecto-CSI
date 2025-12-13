@@ -23,23 +23,23 @@ Route::middleware('auth:sanctum')->group(function () {  //si abres esta ruta me 
         return $request->user();
     });
 
-    Route::get('/habitos', [HabitoController::class, 'index']);
-    Route::post('/habitos', [HabitoController::class, 'store']);
-    Route::put('/habitos/{id}', [HabitoController::class, 'update']);
-    Route::delete('/habitos/{id}', [HabitoController::class, 'destroy']);
-
-    Route::get('/eventos', [EventoController::class, 'index']);
-    Route::post('/eventos', [EventoController::class, 'store']);
-    Route::delete('/eventos/{id}', [EventoController::class, 'destroy']);
-
     Route::get('/movimientos', [MovimientoController::class, 'index']);
     Route::post('/movimientos', [MovimientoController::class, 'store']);
     Route::delete('/movimientos/{id}', [MovimientoController::class, 'destroy']);
     Route::get('/movimientos/resumen', [MovimientoController::class, 'resumen']);
 
+    Route::get('/eventos', [EventoController::class, 'index']);
+    Route::post('/eventos', [EventoController::class, 'store']);
+    Route::delete('/eventos/{id}', [EventoController::class, 'destroy']);
+
     Route::get('/platos', [PlatoController::class, 'index']);        
     Route::post('/platos', [PlatoController::class, 'store']);       
     Route::put('/platos/{id}', [PlatoController::class, 'update']);
     Route::delete('/platos/{id}', [PlatoController::class, 'destroy']);
+
+    Route::get('/habitos', [HabitoController::class, 'index']);
+    Route::post('/habitos', [HabitoController::class, 'store']);
+    Route::put('/habitos/{id}', [HabitoController::class, 'update']);
+    Route::delete('/habitos/{id}', [HabitoController::class, 'destroy']);
 
 });

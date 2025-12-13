@@ -39,8 +39,8 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
     final data = await _service.getHabitos();
     if (mounted) {
       setState(() {
-        listaPorHacer = data.where((h) => h['completado'] == false).toList();
-        listaCompletados = data.where((h) => h['completado'] == true).toList();
+        listaPorHacer = data.where((h) => h['esCompletado'] == false).toList();
+        listaCompletados = data.where((h) => h['esCompletado'] == true).toList();
       });
     }
   }

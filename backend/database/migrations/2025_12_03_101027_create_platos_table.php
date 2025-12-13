@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('platos', function (Blueprint $table) {
+        Schema::create('Plato', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('nombre');
             $table->text('descripcion')->nullable();
-            $table->string('imagen_url')->nullable();
+            $table->string('imagenUrl')->nullable();
             $table->json('ingredientes')->nullable();
             $table->string('tiempo')->nullable();
             $table->string('calorias')->nullable();
-            $table->decimal('calificacion', 2, 1)->default(0);
-            $table->boolean('favorito')->default(false);
+            $table->decimal('estrellas', 2, 1)->default(0);
+            $table->boolean('esFavorito')->default(false);
             $table->timestamps();
         });
     }
@@ -31,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('platos');
+        Schema::dropIfExists('Plato');
     }
 };

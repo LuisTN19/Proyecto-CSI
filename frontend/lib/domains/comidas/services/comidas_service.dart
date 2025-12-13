@@ -6,7 +6,8 @@ import '../../../../core/services/login_service.dart';
 
 class ComidasService {
 
-  final String _baseUrl = 'http://192.168.1.170:8000/api/platos';
+  final String _baseUrl = 'http://10.0.2.2:8000/api/platos';
+  //final String _baseUrl = 'http://192.168.1.170:8000/api/platos';
 
   Map<String, String> _token() {
     return {
@@ -43,9 +44,9 @@ class ComidasService {
 
             'tiempo': item['tiempo'] ?? "",
             'calorias': item['calorias'] ?? "",
-            'calificacion': (item['calificacion'] ?? 0).toDouble(),
-            'favorito': item['favorito'] == true, // Laravel a veces manda 1/0 o true/false
-            'url': item['imagen_url'],
+            'estrellas': (item['estrellas'] ?? 0).toDouble(),
+            'esFavorito': item['esFavorito'] == true, // Laravel a veces manda 1/0 o true/false
+            'url': item['imagenUrl'],
           };
         }).toList().cast<Map<String, dynamic>>();     //convertir a listas.forzando q sean de tipo map como prometimos en la cabecera de la función
       } else {
@@ -75,7 +76,7 @@ class ComidasService {
       request.fields['descripcion'] = descripcion;
       request.fields['tiempo'] = tiempo;
       request.fields['calorias'] = calorias;
-      request.fields['calificacion'] = estrellas.toString();
+      request.fields['estrellas'] = estrellas.toString();
       request.fields['ingredientes'] = jsonEncode(ingredientes);  //tengo una lista ['Pollo', 'Arroz'], como la caja solo acepta texto, convertir a string usando jsonEncode -> "['Pollo', 'Arroz']"
 
       //archivo
@@ -133,7 +134,7 @@ class ComidasService {
       request.fields['descripcion'] = descripcion;
       request.fields['tiempo'] = tiempo;
       request.fields['calorias'] = calorias;
-      request.fields['calificacion'] = estrellas.toString();
+      request.fields['estrellas'] = estrellas.toString();
       request.fields['ingredientes'] = jsonEncode(ingredientes);
 
       // Solo adjuntamos fichero si el usuario eligió uno NUEVO

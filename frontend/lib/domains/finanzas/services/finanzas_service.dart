@@ -6,7 +6,8 @@ import '../../../../core/services/login_service.dart';
 
 class FinanzasService {
 
-  final String _baseUrl = 'http://192.168.1.170:8000/api/movimientos';
+  final String _baseUrl = 'http://10.0.2.2:8000/api/movimientos';
+  //final String _baseUrl = 'http://192.168.1.170:8000/api/movimientos';
 
   Map<String, String> _token() {
     return {
@@ -35,7 +36,7 @@ class FinanzasService {
             'nombre': item['nombre'],
             'cantidad': (item['cantidad'] is String) ? double.parse(item['cantidad']) : item['cantidad'].toDouble(),
             'fecha': item['fecha'], // La fecha ya viene como string 'YYYY-MM-DD' de Laravel, que es lo que espera MovimientoCardWidget.
-            'esGasto': item['es_gasto'] == 1 || item['es_gasto'] == true,
+            'esGasto': item['esGasto'] == 1 || item['esGasto'] == true,
           };
         }).toList().cast<Map<String, dynamic>>();
 
@@ -81,7 +82,7 @@ class FinanzasService {
           'nombre': nombre,
           'cantidad': cantidad.toStringAsFixed(2),
           'fecha': fecha,
-          'es_gasto': esGasto ? '1' : '0',
+          'esGasto': esGasto ? '1' : '0',
         },
       );
       return respuesta.statusCode == 201;

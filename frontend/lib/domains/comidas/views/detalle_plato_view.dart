@@ -244,7 +244,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
     setState(() {
       _estaEnFavoritos = nuevoEstado;
     });
-    await ComidasService().putFAV(widget.id, {'favorito': nuevoEstado});
+    await ComidasService().putFAV(widget.id, {'esFavorito': nuevoEstado});
   }
 
   //----------------------------------------------------------------------------

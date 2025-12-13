@@ -8,9 +8,10 @@ class LoginService {
   static Map<String, dynamic>? usuarioLogueado; //caja vacía -> metemostodo lo que Laravel te ha enviado dentro de la variable usuario, Laravel envía esto: { "id": 1, "name": "Admin", "email": "a@a.com", "created_at": "..." }
   static String? apiToken;
 
-  final String _baseUrl = 'http://192.168.1.170:8000/api';  //laravel en localhost del PC(servidor) pero llamandolo desde el emulador, a la zona de la api (comunicacion frontend-backend)
+  final String _baseUrl = 'http://10.0.2.2:8000/api';  //laravel en localhost del PC(servidor) pero llamandolo desde el emulador, a la zona de la api (comunicacion frontend-backend)
                                                         //si usara localhost estaria llamando a laravel desde el propio emulador(no tengo el servidor aqui (xampp))
                                                         //10.0.2.2 -> IP q solo existe dentro del emulador para conectarse al ordenador,      (Ctrl + Shift + R) para buscar
+  //final String _baseUrl = 'http://192.168.1.170:8000/api';                    //Mi móvil
 
  //LOGIN
   Future<bool> login(String email, String password) async {

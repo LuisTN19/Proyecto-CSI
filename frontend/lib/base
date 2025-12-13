@@ -116,8 +116,8 @@ Future<List<Map<String, dynamic>>> getPlatos() async {
             'tiempo': item['tiempo'] ?? "",
             'calorias': item['calorias'] ?? "",
             'calificacion': (item['calificacion'] ?? 0).toDouble(),
-            'favorito': item['favorito'] == 1 || item['favorito'] == true,
-            'url': item['imagen_url'],
+            'esFavorito': item['esFavorito'] == 1 || item['esFavorito'] == true,
+            'url': item['imagenUrl'],
             'placeholderIcon': null,
           };
         }).toList().cast<Map<String, dynamic>>();

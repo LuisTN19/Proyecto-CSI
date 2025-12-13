@@ -176,8 +176,8 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                             return PlatoCardWidget(             //devolvemos una card por cada plato
                               imagenUrl: plato['url'],
                               nombre: plato['nombre'],
-                              estrellas: plato['calificacion'],
-                              esFavorito: plato['favorito'],
+                              estrellas: plato['estrellas'],
+                              esFavorito: plato['esFavorito'],
                               icono: Icons.restaurant,
 
                               onFav: () {     //al pulsar el corazon llamamos a la función
@@ -192,8 +192,8 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                                       id: plato['id'],
                                       imagenUrl: plato['url'],
                                       nombre: plato['nombre'],
-                                      esFavorito: plato['favorito'],
-                                      estrellas: (plato['calificacion'] ?? 0).toDouble(),
+                                      esFavorito: plato['esFavorito'],
+                                      estrellas: (plato['estrellas'] ?? 0).toDouble(),
                                       descripcion: plato['descripcion'] ?? "Sin descripción",
                                       ingredientes: List<String>.from(plato['ingredientes'] ?? []),
                                       tiempo: plato['tiempo'] ?? "N/A",
@@ -317,7 +317,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
       //FAVORITOS *************************************************
       if (_soloFavoritos) {
         listaTemporal = listaTemporal.where((plato) {
-          return plato['favorito'] == true || plato['favorito'] == 1;
+          return plato['esFavorito'] == true || plato['esFavorito'] == 1;
         }).toList();
       }
 
@@ -335,8 +335,8 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
         case Orden.estrellas:
         // 5 -> 0 (Descendente: b contra a)
           listaTemporal.sort((a, b) {
-            double ratingA = (a['calificacion'] ?? 0).toDouble();
-            double ratingB = (b['calificacion'] ?? 0).toDouble();
+            double ratingA = (a['estrellas'] ?? 0).toDouble();
+            double ratingB = (b['estrellas'] ?? 0).toDouble();
             return ratingB.compareTo(ratingA);
           });
           break;
@@ -390,16 +390,16 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
     if (indexReal != -1) {
 
     }
-      bool nuevoEstado = !listaPlatos[indexReal]['favorito'];
+      bool nuevoEstado = !listaPlatos[indexReal]['esFavorito'];
 
       setState(() {
 
-        listaPlatos[indexReal]['favorito'] = nuevoEstado;
+        listaPlatos[indexReal]['esFavorito'] = nuevoEstado;
 
         _aplicarBusqueda();
       });
 
-    await _service.putFAV(idPlato, {'favorito': nuevoEstado});
+    await _service.putFAV(idPlato, {'esFavorito': nuevoEstado});
   }
 
   //----------------------------------------------------------------------------

@@ -7,7 +7,8 @@ import '../../../../core/services/login_service.dart';
 
 class HabitosService {
 
-  final String _baseUrl = 'http://192.168.1.170:8000/api/habitos';
+  final String _baseUrl = 'http://10.0.2.2:8000/api/habitos';
+  //final String _baseUrl = 'http://192.168.1.170:8000/api/habitos';
 
   Map<String, String> _token() {
     return {
@@ -31,7 +32,7 @@ class HabitosService {
           return {
             'id': item['id'],
             'nombre': item['nombre'],
-            'completado': item['completado'] == 1 || item['completado'] == true,
+            'esCompletado': item['esCompletado'] == 1 || item['esCompletado'] == true,
           };
         }).toList().cast<Map<String, dynamic>>();
       } else {
@@ -70,7 +71,7 @@ class HabitosService {
         Uri.parse('$_baseUrl/$id'),
         headers: _token(),
         body: {
-          'completado': nuevoEstado ? '1' : '0'
+          'esCompletado': nuevoEstado ? '1' : '0'
         },
       );
       return respuesta.statusCode == 200;

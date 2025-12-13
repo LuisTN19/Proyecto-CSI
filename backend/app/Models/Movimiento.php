@@ -6,20 +6,19 @@ use Illuminate\Database\Eloquent\Model;
 
 class Movimiento extends Model
 {
-    protected $table = 'movimientos';
+    protected $table = 'Movimiento';
     
     protected $fillable = [
         'user_id',
         'nombre',
         'cantidad',
         'fecha',
-        'es_gasto',
+        'esGasto',
     ];
 
-    // Esto asegura que Laravel devuelva la 'cantidad' como float y 'es_gasto' como booleano de forma automática.
     protected $casts = [
         'cantidad' => 'float',
-        'es_gasto' => 'boolean',
+        'esGasto' => 'boolean',
         'fecha'    => 'date', // Asegura que se maneje como objeto Carbon
     ];
 

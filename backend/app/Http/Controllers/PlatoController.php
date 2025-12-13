@@ -36,9 +36,9 @@ class PlatoController extends Controller
         //Foto
         if ($request->hasFile('imagen')) {
             $path = $request->file('imagen')->store('platos', 'public'); //genera un hash unico como nombre y lo guarda en el disco duro de tu servidor, dentro de la carpeta storage/app/public/platos.
-            $datos['imagen_url'] = asset('storage/' . $path); //la base de datos no quiere saber dónde está el archivo en el disco duro, quiere saber la dirección web para que el móvil pueda descargarla, asset() convierte la ruta relativa en una URL completa accesible desde internet: Entra: storage/platos/foto.jpg Sale: http://192.168.1.170:8000/storage/platos/foto.jpg//la base de datos no quiere saber dónde está el archivo en el disco duro, quiere saber la dirección web para que el móvil pueda descargarla, asset() convierte la ruta relativa en una URL completa accesible desde internet: Entra: storage/platos/foto.jpg Sale: http://10.0.2.2:8000/storage/platos/foto.jpg
+            $datos['imagenUrl'] = asset('storage/' . $path); //la base de datos no quiere saber dónde está el archivo en el disco duro, quiere saber la dirección web para que el móvil pueda descargarla, asset() convierte la ruta relativa en una URL completa accesible desde internet: Entra: storage/platos/foto.jpg Sale: http://192.168.1.170:8000/storage/platos/foto.jpg//la base de datos no quiere saber dónde está el archivo en el disco duro, quiere saber la dirección web para que el móvil pueda descargarla, asset() convierte la ruta relativa en una URL completa accesible desde internet: Entra: storage/platos/foto.jpg Sale: http://10.0.2.2:8000/storage/platos/foto.jpg
         } else {
-            $datos['imagen_url'] = null;
+            $datos['imagenUrl'] = null;
         }
 
 
@@ -47,11 +47,11 @@ class PlatoController extends Controller
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
             'ingredientes' => $datos['ingredientes'], // Usamos el dato corregido
-            'imagen_url' => $datos['imagen_url'],     // Usamos la URL generada
+            'imagenUrl' => $datos['imagenUrl'],     // Usamos la URL generada
             'tiempo' => $request->tiempo,
             'calorias' => $request->calorias,
-            'calificacion' => $request->calificacion ?? 0,
-            'favorito' => false,
+            'estrellas' => $request->estrellas ?? 0,
+            'esFavorito' => false,
         ]);
 
         return response()->json($plato, 201); //Como por internet no pasan Arrays PHP, Laravel convierte todo a Texto JSON.
@@ -61,7 +61,7 @@ class PlatoController extends Controller
 
     public function update(Request $request, $id)
     {
-        $datos = $request->all();           //en el caso de putFAV solo vendrá con un json pequeñito: {"favorito": true}
+        $datos = $request->all();           //en el caso de putFAV solo vendrá con un json pequeñito: {"esFavorito": true}
 
         if ($request->has('ingredientes') && is_string($request->ingredientes)) {
             $datos['ingredientes'] = json_decode($request->ingredientes, true);
@@ -69,7 +69,7 @@ class PlatoController extends Controller
 
         if ($request->hasFile('imagen')) {
              $path = $request->file('imagen')->store('platos', 'public');
-             $datos['imagen_url'] = asset('storage/' . $path);
+             $datos['imagenUrl'] = asset('storage/' . $path);
         }
 
         $plato = Plato::find($id);

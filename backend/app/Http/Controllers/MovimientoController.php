@@ -29,8 +29,8 @@ class MovimientoController extends Controller
         $resumenMensual = Movimiento::select(
             DB::raw('YEAR(fecha) as anno'), 
             DB::raw('MONTH(fecha) as mes'),
-            DB::raw('SUM(CASE WHEN es_gasto = 0 THEN cantidad ELSE 0 END) as total_ingresos'),
-            DB::raw('SUM(CASE WHEN es_gasto = 1 THEN cantidad ELSE 0 END) as total_gastos')
+            DB::raw('SUM(CASE WHEN esGasto = 0 THEN cantidad ELSE 0 END) as total_ingresos'),
+            DB::raw('SUM(CASE WHEN esGasto = 1 THEN cantidad ELSE 0 END) as total_gastos')
         )
         ->where('user_id', $userId) 
         ->groupBy(DB::raw('YEAR(fecha)'), DB::raw('MONTH(fecha)')) 
@@ -49,14 +49,14 @@ class MovimientoController extends Controller
             'nombre'     => 'required|string|max:150',
             'cantidad'   => 'required|numeric|min:0', 
             'fecha'      => 'required|date_format:Y-m-d', // Formato de fecha esperado: YYYY-MM-DD
-            'es_gasto'   => 'required|boolean', 
+            'esGasto'   => 'required|boolean', 
         ]);
 
         $movimiento = Movimiento::create([
             'nombre'     => $request->nombre,
             'cantidad'   => $request->cantidad,
             'fecha'      => $request->fecha,
-            'es_gasto'   => $request->es_gasto,
+            'esGasto'   => $request->esGasto,
             'user_id'    => $request->user()->id, 
         ]);
         return response()->json($movimiento, 201); 
