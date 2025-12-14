@@ -22,16 +22,43 @@ class _LoginViewState extends State<LoginView> {
   final TextEditingController _emailController = TextEditingController(); //controller en flutter -> guardar en texto en memoria para q se vea en la cajita
   final TextEditingController _passwordController = TextEditingController();
   String mensaje_de_error = "";
+  String? _errorEmail;
+  String? _errorPassword;
 
 
   void _iniciarSesion() async {
     String email = _emailController.text;
     String contrasena = _passwordController.text;
 
-    //LLAMAMOS AL SERVICIO
+    setState(() {
+      _errorEmail = null;
+      _errorPassword = null;
+      mensaje_de_error = ""; // Limpiamos el error global
+    });
+
+    bool hayErrorLocal = false;
+
+    if (email.isEmpty) {          //campo email vacio
+      _errorEmail = "Introduce el correo electrónico.";
+      hayErrorLocal = true;
+    } else if (!email.contains('@') || !email.contains('.')) {      //formato email incorrecto
+      _errorEmail = "Introduce un correo electrónico válido.";
+      hayErrorLocal = true;
+    }
+
+    if (contrasena.isEmpty) {     //campo contrase♦a vacio
+      _errorPassword = "Introduce la contraseña.";
+      hayErrorLocal = true;
+    }
+
+    if (hayErrorLocal) {
+      setState(() {});
+      return;
+    }
+
+    //llamamos al servicio
     bool esCorrecto = await LoginService().login(email, contrasena); //espera hasta q el servicio contesta
 
-    // 2. RESULTADO
     if (esCorrecto) {
       if (mounted) { //mounted seguro, como await es asincrono, por si cierras la pantalla antes q la app no explote
         Navigator.pushReplacement(
@@ -76,10 +103,29 @@ class _LoginViewState extends State<LoginView> {
               const SizedBox(height: 48),
 
 
-              CampoTextoWidget(controller: _emailController, label: "Correo Electrónico", icon: Icons.email,),
+              CampoTextoWidget(controller: _emailController, label: "Correo Electrónico", icon: Icons.email, error: _errorEmail,),
               const SizedBox(height: 24),
-              CampoTextoWidget(controller: _passwordController, label: "Contraseña", icon: Icons.lock, esSecreto: true,),
-              const SizedBox(height: 40),
+              CampoTextoWidget(controller: _passwordController, label: "Contraseña", icon: Icons.lock, esSecreto: true, error: _errorPassword,),
+              const SizedBox(height: 24),
+
+              if (mensaje_de_error.isNotEmpty)
+                Column(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      width: double.infinity,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                      child: Text(
+                          mensaje_de_error,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)
+                      ),
+                    ),
+                    const SizedBox(height: 20), // Espacio entre error y botón
+                  ],
+                )
+              else
+                const SizedBox(height: 2),
 
 
               SizedBox(
@@ -114,22 +160,10 @@ class _LoginViewState extends State<LoginView> {
                   ),
                 ],
               ),
-
-              if (mensaje_de_error.isNotEmpty) ...[   // ... para poder meter dos cosas distintas (el espacio de separación y el mensaje de error) en la columna usando un solo if.
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                  child: Text(mensaje_de_error, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                ),
-              ]
             ],
           ),
         ),
       ),
     );
   }
-
-
-
 }

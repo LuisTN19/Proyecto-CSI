@@ -53,10 +53,10 @@ class PerfilView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
               ),
                 onPressed: () {
-                  // 1. Borramos el usuario
+                  // Borramos el usuario
                   LoginService.usuarioLogueado = null;
 
-                  // 2. ¡BORRAMOS LA LLAVE TAMBIÉN! (IMPORTANTE)
+                  // Borramos el token
                   LoginService.apiToken = null;
 
 
