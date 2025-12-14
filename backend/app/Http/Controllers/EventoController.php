@@ -14,9 +14,7 @@ class EventoController extends Controller
         
         $userId = $request->user()->id; 
 
-        $events = Evento::where('user_id', $userId) 
-                       ->orderBy('fecha', 'asc') 
-                       ->get(); 
+        $events = Evento::where('user_id', $userId)->orderBy('fecha', 'asc')->get(); 
         
         return response()->json($events);
     }

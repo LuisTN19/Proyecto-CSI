@@ -41,6 +41,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
   void initState() {
     super.initState();
     _cargarDatos();
+    CestaService.getCesta();
   }
 
   void _cargarDatos() async {
@@ -227,7 +228,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
 
                 //..............................................................
 
-                ValueListenableBuilder<List<String>>(                           //PESTAÑA CESTA
+                ValueListenableBuilder<List<Map<String, dynamic>>>(              //PESTAÑA CESTA
                   valueListenable: CestaService.itemsNotifier,  //itemsNotifier  -> es una variable (ValueNotifier) dentro del servicio de la cesta que avisa a la interfaz cuando la lista cambia
                   builder: (context, listaCompra, child) {
 
@@ -244,7 +245,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                       );
                     }
 
-                    return Column(          //SI CONTIENE INGREDIENTES, heremos uso solo de eliminar y limpiarCesta
+                    return Column(          //SI HAY INGREDIENTES, heremos uso solo de delete y limpiarCesta
                       children: [
 
                         Padding(            //contador y pa borrar
@@ -254,7 +255,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                             children: [
                               Text("Tienes ${listaCompra.length} productos", style: const TextStyle(color: Colors.white70, fontSize: 16)),
                               TextButton(
-                                onPressed: () => CestaService.limpiarCesta(),
+                                onPressed: () => CestaService.limpiarCesta(),                                                   //limpiar
                                 child: const Text("Borrar todo", style: TextStyle(color: Colors.redAccent, fontSize: 16)),
                               )
                             ],
@@ -265,7 +266,8 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                           child: ListView.builder(
                             itemCount: listaCompra.length,
                             itemBuilder: (context, index) {
-                              final item = listaCompra[index];
+
+                              final item = listaCompra[index]; // 'item' ahora es un Mapa: {'id': 5, 'nombre': 'Leche'}
 
                               return Card(
                                 color: Colors.grey.shade900,
@@ -274,13 +276,13 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                                 child: ListTile(
 
                                   title: Text(
-                                    item,
+                                    item['nombre'],
                                     style: const TextStyle(color: Colors.white, fontSize: 18),
                                   ),
 
                                   trailing: IconButton(
                                     icon: const Icon(Icons.close, color: Colors.orange),
-                                    onPressed: () => CestaService.eliminar(item),
+                                    onPressed: () => CestaService.deleteCesta(item['id']),                                       //delete
                                   ),
                                 ),
                               );
