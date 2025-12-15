@@ -6,10 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 
-class IngredienteCesta extends Model
+class CestaItem extends Model
 {
     use HasFactory;
-    protected $table = 'IngredienteCesta';
+    protected $table = 'CestaItem';
 
     protected $fillable = [
         'user_id',

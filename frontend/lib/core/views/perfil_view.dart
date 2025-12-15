@@ -53,17 +53,14 @@ class PerfilView extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
               ),
                 onPressed: () {
-                  // Borramos el usuario
-                  LoginService.usuarioLogueado = null;
-
-                  // Borramos el token
-                  LoginService.apiToken = null;
+                  LoginService.usuarioLogueado = null; // Borramos el usuario
+                  LoginService.apiToken = null; // Borramos el token
 
 
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (context) => const LoginView()),
-                      (route) => false, // Borra el historial para que no puedas volver al perfil con "atrás"
+                      (route) => false, // Borra el historial para no poder volver al perfil
                 );
               },
               child: const Text("Cerrar Sesión", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),

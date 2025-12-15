@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import '../widgets/fondo_degradado_scaffold.dart';
 import '../widgets/campo_texto_widget.dart';
 
-import 'menu_principal_view.dart';
-
 import '../services/login_service.dart';
 
 
@@ -28,6 +26,82 @@ class _RegistroViewState extends State<RegistroView> {
   String? _errorEmail;
   String? _errorPassword;
   String? _errorConfirmPassword;
+
+
+  //----------------------------------------------------------------------------
+
+  @override
+  Widget build(BuildContext context) {
+    return FondoDegradadoScaffold(
+
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.person_add, size: 80, color: Colors.white),
+              const SizedBox(height: 24),
+              const Text("Crear Cuenta", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
+              const SizedBox(height: 40),
+
+              CampoTextoWidget(controller: _nombreController, label: "Nombre", icon: Icons.person, error: _errorNombre,),
+              const SizedBox(height: 16),
+              CampoTextoWidget(controller: _emailController, label: "Correo Electrónico", icon: Icons.email, error: _errorEmail,),
+              const SizedBox(height: 16),
+              CampoTextoWidget(controller: _passwordController, label: "Contraseña", icon: Icons.lock, esSecreto: true, error: _errorPassword,),
+              const SizedBox(height: 16),
+              CampoTextoWidget(controller: _confirmPasswordController, label: "Confirmar Contraseña", icon: Icons.lock_outline, esSecreto: true, error: _errorConfirmPassword,),
+              const SizedBox(height: 16),
+
+              if (mensaje_de_error.isNotEmpty)
+                Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      width: double.infinity,
+                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+                      child: Text(
+                          mensaje_de_error,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                  ],
+                )
+              else
+                const SizedBox(height: 2),
+
+
+              //BOTÓN REGISTRARSE
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton(
+                  onPressed: _registrarse,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purpleAccent.shade700,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 5,
+                  ),
+                  child: const Text("Registrarse", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   //----------------------------------------------------------------------------
 
@@ -91,94 +165,30 @@ class _RegistroViewState extends State<RegistroView> {
       return;
     }
 
-
+    //llamamos al servicio
     bool registroExitoso = await LoginService().registrar(nombre, email, pass1);
-
 
     if (registroExitoso) {
       if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const MenuPrincipal()),
-              (route) => false,
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("¡Casi listo!"),
+            content: const Text("Te hemos enviado un correo de confirmación.\n\nPor favor, revísalo para activar tu cuenta y vuelve aquí para iniciar sesión."),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // cerrar la la alerta
+                  Navigator.of(context).pop(); // cerrar registro -> vuelve al login
+                },
+                child: const Text("Ir al Login"),
+              ),
+            ],
+          ),
         );
       }
     } else {
       setState(() { mensaje_de_error = "El correo eléctronico ya está registrado o se ha producido un error"; });
     }
-  }
-
-  //----------------------------------------------------------------------------
-
-
-  @override
-  Widget build(BuildContext context) {
-    return FondoDegradadoScaffold(
-
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.person_add, size: 80, color: Colors.white),
-              const SizedBox(height: 24),
-              const Text("Crear Cuenta", style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white)),
-              const SizedBox(height: 40),
-
-              CampoTextoWidget(controller: _nombreController, label: "Nombre", icon: Icons.person, error: _errorNombre,),
-              const SizedBox(height: 16),
-              CampoTextoWidget(controller: _emailController, label: "Correo Electrónico", icon: Icons.email, error: _errorEmail,),
-              const SizedBox(height: 16),
-              CampoTextoWidget(controller: _passwordController, label: "Contraseña", icon: Icons.lock, esSecreto: true, error: _errorPassword,),
-              const SizedBox(height: 16),
-              CampoTextoWidget(controller: _confirmPasswordController, label: "Confirmar Contraseña", icon: Icons.lock_outline, esSecreto: true, error: _errorConfirmPassword,),
-              const SizedBox(height: 16),
-
-              if (mensaje_de_error.isNotEmpty)
-                Column(
-                  children: [
-                    const SizedBox(height: 20), // Espacio entre campo y error
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      width: double.infinity,
-                      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                      child: Text(
-                          mensaje_de_error,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)
-                      ),
-                    ),
-                    const SizedBox(height: 20), // Espacio entre error y botón
-                  ],
-                )
-              else
-                const SizedBox(height: 2),
-
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: _registrarse,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purpleAccent.shade700,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 5,
-                  ),
-                  child: const Text("Registrarse", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }

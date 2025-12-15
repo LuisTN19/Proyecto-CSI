@@ -5,16 +5,16 @@ import 'dart:convert'; //para traducir el JSON
 class LoginService {
 
 //static para que el Token y el Usuario sean Memoria Global y no se borren al cambiar de pantalla
-  static Map<String, dynamic>? usuarioLogueado; //caja vacía -> metemostodo lo que Laravel te ha enviado dentro de la variable usuario, Laravel envía esto: { "id": 1, "name": "Admin", "email": "a@a.com", "created_at": "..." }
+  static Map<String, dynamic>? usuarioLogueado; //caja vacía -> metemostodo lo que Laravel envía dentro de la variable usuario, Laravel envía esto: { "id": 1, "name": "Admin", "email": "a@a.com", "created_at": "..." }
   static String? apiToken;
 
   final String _baseUrl = 'http://10.0.2.2:8000/api';  //laravel en localhost del PC(servidor) pero llamandolo desde el emulador, a la zona de la api (comunicacion frontend-backend)
                                                         //si usara localhost estaria llamando a laravel desde el propio emulador(no tengo el servidor aqui (xampp))
-                                                        //10.0.2.2 -> IP q solo existe dentro del emulador para conectarse al ordenador,      (Ctrl + Shift + R) para buscar
+                                                        //10.0.2.2 -> IP q solo existe dentro del emulador para conectarse al ordenador
   //final String _baseUrl = 'http://192.168.1.170:8000/api';                    //Mi móvil
 
  //LOGIN
-  Future<bool> login(String email, String password) async {
+  Future<Map<String, dynamic>> login(String email, String password) async {
     try {
       final respuesta = await http.post(
         Uri.parse('$_baseUrl/login'),
@@ -24,21 +24,30 @@ class LoginService {
 
       //LARAVEL en API.PHP FABRICA EL TOKEN y lo devuelve en JSON
 
+      //CASO: EXITO
       if (respuesta.statusCode == 200) {
         final datos = jsonDecode(respuesta.body);
-
         usuarioLogueado = datos['usuario'];
-
         apiToken = datos['token'];
 
         print("Token guardado: $apiToken");
-        return true;
-      } else {
-        return false;
+        return {'exito': true};
       }
+
+      //CASO: CORREO NO VERIFICADO
+      else if (respuesta.statusCode == 403) {
+        final datos = jsonDecode(respuesta.body);
+        if (datos['status'] == 'unverified') {  // Si laravel nos mandó la marca 'unverified'
+          return {'exito': false, 'status': 'unverified'};
+        }
+      }
+
+      //CASO: ERROR GENÉRICO
+      return {'exito': false, 'status': 'error'};
+
     } catch (e) {
       print("Error: $e");
-      return false;
+      return {'exito': false, 'status': 'error'};
     }
   }
 
@@ -52,12 +61,7 @@ class LoginService {
       );
 
       if (respuesta.statusCode == 201 || respuesta.statusCode == 200) {
-        final datos = jsonDecode(respuesta.body);
-
-        usuarioLogueado = datos['usuario'];
-        apiToken = datos['token'];
-
-        return true;
+        return true; // Solo comprobamos si se creó
       } else {
         return false;
       }
@@ -67,9 +71,4 @@ class LoginService {
     }
   }
 }
-
-
-
-
-
 

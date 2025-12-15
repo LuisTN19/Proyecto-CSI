@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
    
 use Illuminate\Support\Facades\Auth;                                                // Portero
 use Illuminate\Support\Facades\Hash;                                                // Encriptador
+use Illuminate\Auth\Events\Registered;
 
 use App\Models\User; 
 
@@ -16,14 +17,22 @@ class AuthController extends Controller
     // LOGIN
     public function login(Request $request)
     {
-        // El Portero (Auth) intenta entrar (attempt)
+        // Verifica credenciales, rechaza si fallan
         if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json(['exito' => false], 401);;
         }
 
-        // Si el portero dice OK, buscamos al usuario en la BD
+        // Busca al usuario en la BD
         $user = User::where('email', $request->email)->firstOrFail();
-        //$user = Auth::user();   //los guarda en la variable user
+
+        //Si no ha confirmado el correo bloquea el acceso
+        if (! $user->hasVerifiedEmail()) {
+        return response()->json([
+            'exito' => false,
+            'message' => 'Debes confirmar tu correo antes de entrar.',
+            'status' => 'unverified' // Para que Flutter sepa cual mostrar
+        ], 403); 
+        }
 
         // SANCTUM: Crea un token nuevo
         $token = $user->createToken('movil')->plainTextToken;
@@ -43,7 +52,7 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users',   //obligatorio| formato de correo | no este ya en la BD            
-            'password' => 'required|min:8',             //LA CONTRASEÑAA DEBE TENER MINIMO 8 CARACTERES
+            'password' => 'required|min:8',             //LA CONTRASEÑA DEBE TENER MINIMO 8 CARACTERES
         ]);
 
         $user = User::create([
@@ -52,13 +61,13 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        $token = $user->createToken('movil')->plainTextToken;
+        event(new Registered($user)); //esto envia el correo automáticamente
 
         return response()->json([
-            'exito' => true,
-            'usuario' => $user,
-            'token' => $token
-        ], 201);
+        'exito' => true,
+        'usuario' => $user,
+        'message' => 'Usuario registrado. Por favor, confirma tu correo electrónico.'
+    ], 201);
     }
 
     

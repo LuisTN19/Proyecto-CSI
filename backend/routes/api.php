@@ -8,8 +8,8 @@ use App\Http\Controllers\HabitoController;
 use App\Http\Controllers\EventoController;
 use App\Http\Controllers\MovimientoController;
 use App\Http\Controllers\PlatoController;
-use App\Http\Controllers\IngredienteCestaController;
-use App\Models\Evento;
+use App\Http\Controllers\CestaItemController;
+
 
 //RUTAS PÚBLICAS
 Route::post('/login', [AuthController::class, 'login']);
@@ -38,9 +38,9 @@ Route::middleware('auth:sanctum')->group(function () {  //si abres esta ruta me 
     Route::put('/platos/{id}', [PlatoController::class, 'update']);
     Route::delete('/platos/{id}', [PlatoController::class, 'destroy']);
 
-    Route::get('/cesta', [IngredienteCestaController::class, 'index']);      
-    Route::post('/cesta', [IngredienteCestaController::class, 'store']);     
-    Route::delete('/cesta/{id}', [IngredienteCestaController::class, 'destroy']);
+    Route::get('/cesta', [CestaItemController::class, 'index']);      
+    Route::post('/cesta', [CestaItemController::class, 'store']);     
+    Route::delete('/cesta/{id}', [CestaItemController::class, 'destroy']);
 
     Route::get('/habitos', [HabitoController::class, 'index']);
     Route::post('/habitos', [HabitoController::class, 'store']);

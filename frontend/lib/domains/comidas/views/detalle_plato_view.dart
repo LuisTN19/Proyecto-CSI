@@ -39,6 +39,9 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
   late String _calorias;
 
 
+  final _cestaService = CestaService();
+
+
   @override
   void initState() {
     super.initState();
@@ -166,7 +169,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
                     label: Text("Añadir todo", style: TextStyle(color: Colors.orange)),
                     onPressed: () {
                       for (var ing in _ingredientes) {
-                        CestaService.postCesta(ing);
+                        _cestaService.postCesta(ing);
                       }
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text("¡Todos los ingredientes añadidos a la cesta!")),
@@ -186,7 +189,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
                   avatar: const Icon(Icons.add, size: 16, color: Colors.orange),
 
                   onPressed: () {
-                    CestaService.postCesta(ing);
+                    _cestaService.postCesta(ing);
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                           content: Text("Añadido: $ing"),

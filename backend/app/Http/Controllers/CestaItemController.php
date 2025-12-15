@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-use App\Models\IngredienteCesta;
+use App\Models\CestaItem;
 
-class IngredienteCestaController extends Controller
+class CestaItemController extends Controller
 {
     public function index(Request $request)
     {
         $userId = $request->user()->id; 
 
-        $items = IngredienteCesta::where('user_id', $userId)->get(); 
+        $items = CestaItem::where('user_id', $userId)->get(); 
         
         return response()->json($items);
     }
@@ -24,7 +24,7 @@ class IngredienteCestaController extends Controller
             'nombre' => 'required|string|max:255',
         ]);
 
-        $item = IngredienteCesta::create([
+        $item = CestaItem::create([
             'nombre' => $request->nombre,
             'user_id' => $request->user()->id, 
         ]);
@@ -34,7 +34,7 @@ class IngredienteCestaController extends Controller
 
     public function destroy($id)
     {
-        $item = IngredienteCesta::find($id);
+        $item = CestaItem::find($id);
 
         if ($item) {
             $item->delete();

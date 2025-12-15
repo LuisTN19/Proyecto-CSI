@@ -38,24 +38,25 @@ class CampoTextoWidget extends StatelessWidget {
 
         prefixIcon: Icon(icon, color: Colors.white70),
 
+        //Borde normal sin estar escribiendo
         enabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: borderColor),
           borderRadius: BorderRadius.circular(12),
         ),
 
-        // 💡 Borde enfocado: También cambia a rojo si hay error
+        //Resaltado al tocar para escribir
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(color: focusedBorderColor, width: 2),
           borderRadius: BorderRadius.circular(12),
         ),
 
-        // 💡 Borde de error: Necesario para que el errorText funcione visualmente
+        //Dato inválido sin estar escribiendo
         errorBorder: OutlineInputBorder(
           borderSide: BorderSide(color: errorColor, width: 2),
           borderRadius: BorderRadius.circular(12),
         ),
 
-        // 💡 Borde enfocado con error: Mantiene el color de error y el grosor
+        //Escribiendo mientras corriges un error
         focusedErrorBorder: OutlineInputBorder(
           borderSide: BorderSide(color: errorColor, width: 2.5),
           borderRadius: BorderRadius.circular(12),

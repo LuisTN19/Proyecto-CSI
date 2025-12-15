@@ -29,6 +29,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
   List<Map<String, dynamic>> _platosVisibles = [];  // platos q se ven por pantalla (búsqueda)
 
   final _service = ComidasService();
+  final _cestaService = CestaService();
 
   //VARIABLES DE FILTROS
   String _busqueda = ""; // lo que escribe el usuario
@@ -41,7 +42,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
   void initState() {
     super.initState();
     _cargarDatos();
-    CestaService.getCesta();
+    _cestaService.getCesta();
   }
 
   void _cargarDatos() async {
@@ -255,7 +256,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                             children: [
                               Text("Tienes ${listaCompra.length} productos", style: const TextStyle(color: Colors.white70, fontSize: 16)),
                               TextButton(
-                                onPressed: () => CestaService.limpiarCesta(),                                                   //limpiar
+                                onPressed: () => _cestaService.limpiarCesta(),                                                   //limpiar
                                 child: const Text("Borrar todo", style: TextStyle(color: Colors.redAccent, fontSize: 16)),
                               )
                             ],
@@ -282,7 +283,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
 
                                   trailing: IconButton(
                                     icon: const Icon(Icons.close, color: Colors.orange),
-                                    onPressed: () => CestaService.deleteCesta(item['id']),                                       //delete
+                                    onPressed: () => _cestaService.deleteCesta(item['id']),                                       //delete
                                   ),
                                 ),
                               );

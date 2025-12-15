@@ -8,8 +8,9 @@ use Laravel\Sanctum\HasApiTokens;                                               
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;                                        //recibir emails como recucperacion de contraseña
+use Illuminate\Contracts\Auth\MustVerifyEmail;                                  //verificar el correo al registrarse
 
-class User extends Authenticatable                                              //no model (tabla normal y corriente), tiene superpoderes de login
+class User extends Authenticatable implements MustVerifyEmail                            //no extends model (tabla normal y corriente), tiene superpoderes de login
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;

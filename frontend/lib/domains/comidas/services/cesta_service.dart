@@ -5,12 +5,15 @@ import '../../../../core/services/login_service.dart';
 
 class CestaService {
 
-  static const String _baseUrl = 'http://10.0.2.2:8000/api/cesta';
+  final String _baseUrl = 'http://10.0.2.2:8000/api/cesta';
+  //final String _baseUrl = 'http://192.168.1.170:8000/api/cesta';
+
 
   //Ahora la lista guarda objetos con ID y Nombre, no solo texto : [{'id': 10, 'nombre': 'Leche'}, {'id': 11, 'nombre': 'Pan'}]
+  //static *memoria global) para que la pestaña de Platos y la de Cesta compartan la misma lista
   static final ValueNotifier<List<Map<String, dynamic>>> itemsNotifier = ValueNotifier([]); //ValueNotifier para que la vista sepa cuándo repintarse
 
-  static Map<String, String> _token() {
+  Map<String, String> _token() {
     return {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -18,7 +21,7 @@ class CestaService {
     };
   }
 
-  static Future<void> getCesta() async {
+  Future<void> getCesta() async {
     try {
       final response = await http.get(Uri.parse(_baseUrl), headers: _token());
 
@@ -35,7 +38,8 @@ class CestaService {
     }
   }
 
-  static Future<void> postCesta(String nombreIngrediente) async {
+  Future<void> postCesta(String nombreIngrediente) async {
+    // Evitar duplicados
     bool existe = itemsNotifier.value.any((item) => item['nombre'] == nombreIngrediente);
     if (existe) return;
 
@@ -54,9 +58,11 @@ class CestaService {
     }
   }
 
-  static Future<void> deleteCesta(int id) async {
+  Future<void> deleteCesta(int id) async {
     try {
-      final response = await http.delete(Uri.parse('$_baseUrl/$id'), headers: _token(),
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/$id'),
+        headers: _token(),
       );
 
       if (response.statusCode == 200) {
@@ -69,9 +75,8 @@ class CestaService {
     }
   }
 
-  //en Laravel solo pa borrar uno -> aqui bucle
-  static Future<void> limpiarCesta() async {
-    final lista = List.from(itemsNotifier.value); // Copia de seguridad
+  Future<void> limpiarCesta() async {
+    final lista = List.from(itemsNotifier.value);
 
     itemsNotifier.value = [];
 
