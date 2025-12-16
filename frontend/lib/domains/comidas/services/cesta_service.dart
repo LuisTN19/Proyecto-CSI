@@ -5,8 +5,8 @@ import '../../../../core/services/login_service.dart';
 
 class CestaService {
 
-  final String _baseUrl = 'http://10.0.2.2:8000/api/cesta';
-  //final String _baseUrl = 'http://192.168.1.170:8000/api/cesta';
+  //final String _baseUrl = 'http://10.0.2.2:8000/api/cesta';
+  final String _baseUrl = 'http://192.168.1.170:8000/api/cesta';
 
 
   //Ahora la lista guarda objetos con ID y Nombre, no solo texto : [{'id': 10, 'nombre': 'Leche'}, {'id': 11, 'nombre': 'Pan'}]

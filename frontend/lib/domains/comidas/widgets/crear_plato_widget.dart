@@ -118,7 +118,6 @@ class _CrearPlatoWidgetState extends State<CrearPlatoWidget> {
             // NOMBRE
             TextField(
               controller: _nombreCtrl,
-              autofocus: true,
               decoration: InputDecoration(
                 labelText: "Nombre",
                 border: const OutlineInputBorder(),

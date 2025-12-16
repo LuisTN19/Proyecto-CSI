@@ -6,8 +6,8 @@ import '../../../../core/services/login_service.dart';
 
 class FinanzasService {
 
-  final String _baseUrl = 'http://10.0.2.2:8000/api/movimientos';
-  //final String _baseUrl = 'http://192.168.1.170:8000/api/movimientos';
+  //final String _baseUrl = 'http://10.0.2.2:8000/api/movimientos';
+  final String _baseUrl = 'http://192.168.1.170:8000/api/movimientos';
 
   Map<String, String> _token() {
     return {

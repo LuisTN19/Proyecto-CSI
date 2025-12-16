@@ -99,7 +99,16 @@ class _LoginViewState extends State<LoginView> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 36),
+
+              //contraseña  olvidada
+              TextButton(
+                onPressed: _mostrarAlertaRecuperar,
+                child: const Text(
+                  "¿Has olvidado tu contraseña?",
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
 
               //para registrarse
               Row(
@@ -113,10 +122,12 @@ class _LoginViewState extends State<LoginView> {
                         MaterialPageRoute(builder: (context) => const RegistroView()),
                       );
                     },
-                    child: const Text("Regístrate aquí", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: const Text("Regístrate aquí", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                   ),
                 ],
               ),
+
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -189,4 +200,78 @@ class _LoginViewState extends State<LoginView> {
       });
     }
   }
+
+  //----------------------------------------------------------------------------
+
+  void _mostrarAlertaRecuperar() {
+    final emailRecuperarController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text("Recuperar Contraseña"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text("Introduce tu correo y te enviaremos un enlace para restablecerla."),
+              const SizedBox(height: 10),
+              TextField(
+                controller: emailRecuperarController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                  hintText: "ejemplo@correo.com",
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Cancelar"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                FocusScope.of(context).unfocus();
+                Navigator.pop(dialogContext);
+
+                final service = LoginService();
+                final email = emailRecuperarController.text.trim();
+
+                if (email.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Por favor, escribe un correo."))
+                  );
+                  return;
+                }
+
+                bool enviado = await service.recuperarContrasena(email);
+
+                if (!mounted) return;
+
+                if (enviado) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("¡Correo enviado! Revisa tu bandeja de entrada."),
+                      backgroundColor: Colors.white,
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Error: No encontramos ese correo o no está verificado."),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: const Text("Enviar"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 }

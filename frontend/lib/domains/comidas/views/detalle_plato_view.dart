@@ -285,9 +285,14 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
 
 
         onGuardar: (nombre, desc, ingr, tiempo, cal, estrellas, imagen) async {
+
           bool exito = await ComidasService().putPLATO(
               widget.id, nombre, desc, ingr, tiempo, cal, estrellas, imagen
           );
+
+          final listaActualizada = await ComidasService().getPlatos();
+          // Buscamos este plato en la lista nueva
+          final platoRenovado = listaActualizada.firstWhere((p) => p['id'] == widget.id);
 
           if (exito) {
             setState(() {
@@ -298,7 +303,9 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
               _tiempo = tiempo;
               _calorias = cal;
               _estrellas = estrellas;
-              // La imagen se actualizará si sales y entras o si refrescas, ya que la URL de internet tarda un pelín en cambiar o es la misma.
+
+              String nuevaUrl = platoRenovado['url'];
+              _imagenUrl = "$nuevaUrl?v=${DateTime.now().millisecondsSinceEpoch}";
             });
           } else {
             ScaffoldMessenger.of(context).showSnackBar(

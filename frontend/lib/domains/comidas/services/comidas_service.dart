@@ -6,8 +6,8 @@ import '../../../../core/services/login_service.dart';
 
 class ComidasService {
 
-  final String _baseUrl = 'http://10.0.2.2:8000/api/platos';
-  //final String _baseUrl = 'http://192.168.1.170:8000/api/platos';
+  //final String _baseUrl = 'http://10.0.2.2:8000/api/platos';
+  final String _baseUrl = 'http://192.168.1.170:8000/api/platos';
 
   Map<String, String> _token() {
     return {

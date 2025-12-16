@@ -4,13 +4,17 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\User;
+//Cambiar contraseña
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
 
-//RUTA PERSONALIZADA DE VERIFICACIÓN (SIN LOGIN OBLIGATORIO)
+//VERIFICACIÓN DEL CORREO----------------------------------------------------------------------------------------------------------
 Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
     
     // Buscamos al usuario
@@ -34,6 +38,41 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
 
 })->name('verification.verify'); // Este nombre hace que Laravel use ESTA ruta en el email
 
+
+//CAMBIAR CONTRASEÑA-----------------------------------------------------------------------------------------------------------
+
+// GET: Muestra el formulario cuando hacen clic en el email
+Route::get('/reset-password/{token}', function ($token) {
+    return view('reset-password', ['token' => $token]);
+})->middleware('guest')->name('password.reset'); //Este nombre es el que busca Laravel
+
+// POST: Procesa el cambio de contraseña
+Route::post('/reset-password', function (Request $request) {
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:8|confirmed',
+    ]);
+
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->forceFill([
+                'password' => Hash::make($password)
+            ])->setRememberToken(Str::random(60));
+            $user->save();
+            event(new Illuminate\Auth\Events\PasswordReset($user));
+        }
+    );
+
+    return $status === Password::PASSWORD_RESET
+        ? "<h1>¡Contraseña cambiada!</h1><p>Ya puedes volver a la App e iniciar sesión.</p>"
+        : back()->withErrors(['email' => [__($status)]]);
+
+})->middleware('guest')->name('password.update');
+
+
+//-----------------------------------------------------------------------------------------------------------------------------------
 
 
 Route::get('/dashboard', function () {
