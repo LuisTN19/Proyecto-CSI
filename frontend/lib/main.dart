@@ -22,14 +22,6 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
 
-      //Intentar igualar el tamaño de las cosas de mi movil al del emulador
-      builder: (context, child) {
-        return MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-          child: child!,
-        );
-      },
-
       home: const LoginView(), //Primera pantalla que importamos
     );
   }

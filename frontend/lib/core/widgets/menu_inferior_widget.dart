@@ -21,46 +21,50 @@ class MenuInferiorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: appBar,
-      body: body,
+    return MediaQuery(
+        data: MediaQuery.of(context).copyWith(textScaler: const TextScaler.linear(0.85)),   //Para que en el móvil real se vean las cosas mas chiquititas y mejor
 
-      //------------------------------------------------------------------------  BOTÓN +
-      floatingActionButton: pulsarMAS != null
-          ? FloatingActionButton(
-        onPressed: pulsarMAS,
-        backgroundColor: colorMAS,
-        child: const Icon(Icons.add, color: Colors.white),
-      )
-          : null,
+      child: Scaffold(
+        appBar: appBar,
+        body: body,
 
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+        //------------------------------------------------------------------------  BOTÓN +
+        floatingActionButton: pulsarMAS != null
+            ? FloatingActionButton(
+          onPressed: pulsarMAS,
+          backgroundColor: colorMAS,
+          child: const Icon(Icons.add, color: Colors.white),
+        )
+            : null,
 
-      //------------------------------------------------------------------------
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 6.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-            IconButton(
-              icon: const Icon(Icons.home, size: 30, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
-            ),
+        //------------------------------------------------------------------------
+        bottomNavigationBar: BottomAppBar(
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 6.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
 
-            const SizedBox(width: 48),
+              IconButton(
+                icon: const Icon(Icons.home, size: 30, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
 
-            IconButton(
-              icon: const Icon(Icons.person_outline, size: 30, color: Colors.white),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const PerfilView()),
-                );
-              },
-            ),
-          ],
+              const SizedBox(width: 48),
+
+              IconButton(
+                icon: const Icon(Icons.person_outline, size: 30, color: Colors.white),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PerfilView()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
