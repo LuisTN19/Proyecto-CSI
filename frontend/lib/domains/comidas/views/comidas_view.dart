@@ -168,12 +168,24 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                       //........................................................
 
                       Expanded(                                //LISTA DE PLATOS
-                        child: ListView.builder(
+                        child: _platosVisibles.isEmpty
+                            ? const Center( // 💡 SI LA LISTA ESTÁ VACÍA, MOSTRAMOS UN MENSAJE
+                          child: Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: Text(
+                              "No hay platos creados.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16, color: Colors.grey),
+                            ),
+                          ),
+                        )
+                        : ListView.builder(
                           padding: const EdgeInsets.only(bottom: 100),
 
                           itemCount: _platosVisibles.length,    //se inicialize en _aplicarBusqueda(), construimos la lista a partir de los platos que se tengan que ver (row), no de todos
                           itemBuilder: (context, index) {
                             final plato = _platosVisibles[index];
+
 
                             return PlatoCardWidget(             //devolvemos una card por cada plato
                               imagenUrl: plato['url'],

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class HabitosCardWidget extends StatelessWidget {
-  final String habito;
+  final String nombre;
   final bool esta_completado;
 
   final VoidCallback al_pulsar_check;
@@ -12,7 +12,7 @@ class HabitosCardWidget extends StatelessWidget {
 
   const HabitosCardWidget({
     super.key,
-    required this.habito,
+    required this.nombre,
     required this.esta_completado,
     required this.al_pulsar_check,
 
@@ -53,16 +53,18 @@ class HabitosCardWidget extends StatelessWidget {
             children: [
 
               // TEXTO
-              Text(
-                habito,
-                style: TextStyle(
-                  fontSize: 20,
-                  color: esta_completado ? Colors.green : Colors.white,
-                  decoration: esta_completado
-                      ? TextDecoration.lineThrough
-                      : TextDecoration.none,
+            Expanded(   //para que no sobresalga el tecxto por la pantalla y se ajusta a la cajita
+              child: Text(
+                  nombre,
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: esta_completado ? Colors.green : Colors.white,
+                    decoration: esta_completado
+                        ? TextDecoration.lineThrough
+                        : TextDecoration.none,
+                  ),
                 ),
-              ),
+            ),
 
               // ICONO
               es_seleccionado

@@ -131,7 +131,7 @@ class _CrearPlatoWidgetState extends State<CrearPlatoWidget> {
             // DESCRIPCIÓN
             TextField(
               controller: _descCtrl,
-              maxLines: 2,
+              maxLines: 3,
               decoration: const InputDecoration(labelText: "Descripción", border: OutlineInputBorder()),
             ),
             const SizedBox(height: 15),
@@ -161,6 +161,8 @@ class _CrearPlatoWidgetState extends State<CrearPlatoWidget> {
             // INGREDIENTES
             TextField(
               controller: _ingredientesCtrl,
+              minLines: 1,
+              maxLines: null,
               decoration: const InputDecoration(labelText: "Ingredientes (separados por coma)", border: OutlineInputBorder(), prefixIcon: Icon(Icons.shopping_basket)),
             ),
             const SizedBox(height: 15),

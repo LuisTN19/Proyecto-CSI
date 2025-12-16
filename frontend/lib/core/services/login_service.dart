@@ -13,6 +13,9 @@ class LoginService {
                                                         //10.0.2.2 -> IP q solo existe dentro del emulador para conectarse al ordenador
   //final String _baseUrl = 'http://192.168.1.170:8000/api';                    //Mi móvil
 
+
+  //----------------------------------------------------------------------------
+
  //LOGIN
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
@@ -50,6 +53,8 @@ class LoginService {
       return {'exito': false, 'status': 'error'};
     }
   }
+
+  //----------------------------------------------------------------------------
 
   // REGISTRO
   Future<bool> registrar(String nombre, String email, String password) async {

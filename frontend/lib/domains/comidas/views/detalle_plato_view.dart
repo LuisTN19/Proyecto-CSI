@@ -122,7 +122,6 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
                     child: Text(
                       _nombre,
                       style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
 
@@ -136,6 +135,7 @@ class _DetallePlatoViewState extends State<DetallePlatoView> {
                   ),
                 ],
               ),
+              const SizedBox(height: 24),
 
               // ESTRELLAS -> funcion
               _buildEstrellasReales(),

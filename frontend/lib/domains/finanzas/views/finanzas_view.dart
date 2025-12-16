@@ -88,6 +88,17 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
     return totalMovido > 0 ? totalIngresos / totalMovido : 0.0;
   }
 
+  //funcion para quitar los centimos cuando son 0
+  String _quitar00(double m) {
+    // Comprueba si el monto tiene decimales distintos de cero
+    if (m == m.truncateToDouble()) {
+      // Si la parte decimal es .00, muestra solo la parte entera.
+      return m.toInt().toString();
+    } else {
+      // Si hay decimales, muestra dos decimales
+      return m.toStringAsFixed(2);
+    }
+  }
 
   //----------------------------------------------------------------------------
 
@@ -167,7 +178,7 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                                     children: [
                                       Text('Ingresos', style: TextStyle(fontSize: 20)),
                                       Text(
-                                          '${totalIngresos.toStringAsFixed(2)}€',
+                                          '${_quitar00(totalIngresos)}€',
                                           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)
                                       ),
                                     ],
@@ -193,7 +204,7 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                                     children: [
                                       Text('Gastos', style: TextStyle(fontSize: 20)),
                                       Text(
-                                          '${totalGastos.toStringAsFixed(2)}€',
+                                          '${_quitar00(totalGastos)}€',
                                           style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.red)
                                       ),
                                     ],
@@ -212,7 +223,7 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                               const Divider(thickness: 1),
                               Center(
                                 child: Text(
-                                  'Total: ${totalNeto.toStringAsFixed(2)}€',
+                                  'Total: ${_quitar00(totalNeto)}€',
                                   style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                                 ),
                               ),

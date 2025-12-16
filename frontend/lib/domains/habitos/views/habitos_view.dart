@@ -90,55 +90,50 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
 
         body: TabBarView(
           children: [
+            _construirListaHabitos(listaPorHacer, false),                       // POR HACER
 
-
-            ListView.builder(                                                   //POR HACER
-              itemCount: listaPorHacer.length,
-
-              itemBuilder: (context, index) {
-                final item = listaPorHacer[index];
-
-                return HabitosCardWidget(
-                  habito: item['nombre'],
-                  esta_completado: false,
-
-                  al_pulsar_check: () {
-                    _marcarCheck(item['id'], false);
-                  },
-
-                  //MULTISELECCION
-                  es_seleccionado: seleccionados.contains(item['id']),
-                  hay_seleccion_activa: haySeleccion,
-                  seleccionar: () => multiSeleccion(item['id']),
-                );
-              },
-            ),
-
-            //..................................................................
-
-            ListView.builder(                                                   //COMPLETADOS
-              itemCount: listaCompletados.length,
-
-              itemBuilder: (context, index) {
-                final item = listaCompletados[index];
-
-                return HabitosCardWidget(
-                  habito: item['nombre'],
-                  esta_completado: true,
-
-                  al_pulsar_check: () {
-                    _marcarCheck(item['id'], true);
-                  },
-
-                  es_seleccionado: seleccionados.contains(item['id']),
-                  hay_seleccion_activa: haySeleccion,
-                  seleccionar: () => multiSeleccion(item['id']),
-                );
-              },
-            ),
+            _construirListaHabitos(listaCompletados, true),                     //COMPLETADOS
           ],
         ),
       ),
+    );
+  }
+
+  //----------------------------------------------------------------------------
+
+  Widget _construirListaHabitos(List<Map<String, dynamic>> habitos, bool completado) {
+    if (habitos.isEmpty) {
+      return const Center(
+        child: Text(
+            "No hay hábitos en esta categoría.",
+            style: TextStyle(color: Colors.grey)
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 8.0),
+      itemCount: habitos.length,
+
+      itemBuilder: (context, index) {
+        final habito = habitos[index];
+        final id = habito['id'];  // Importante: ID para la multiselección
+
+        return HabitosCardWidget(
+          nombre: habito['nombre'],
+          esta_completado: completado,
+
+
+          al_pulsar_check: () {
+            _marcarCheck(id, completado);
+          },
+
+          // MULTISELECCION
+          es_seleccionado: seleccionados.contains(id),
+          hay_seleccion_activa: haySeleccion,
+          seleccionar: () => multiSeleccion(id),
+        );
+      },
     );
   }
 

@@ -81,8 +81,8 @@ class PlatoCardWidget extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                         color: colorTexto,
                       ),
-                      maxLines: 1, // para que no choque con las estrellas
-                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,  //puntos suspensivos si no cabe
                     ),
 
                     const SizedBox(height: 4),

@@ -57,6 +57,9 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
   void initState() {
     super.initState();
     _cargarDatos();
+
+    final now = DateTime.now();         //inicializarlo para q en la pestaña calendario salgan los eventos del dia actual del tiron
+    _diaSeleccionado = DateTime.utc(now.year, now.month, now.day);
   }
 
   void _cargarDatos() async {
@@ -196,6 +199,7 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
                               ),
 
 
+
                               ListView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
@@ -227,6 +231,17 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
                     builder: (context) {
                       final listaEventos = _obtenerEventosOrdenados();
 
+                      if (listaEventos.isEmpty) {
+                        return const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(20.0),
+                            child: Text(
+                                "No hay eventos creados.",
+                                style: TextStyle(fontSize: 16, color: Colors.white60)
+                            ),
+                          ),
+                        );
+                      }
                       return ListView.builder(
                         itemCount: listaEventos.length,
                         itemBuilder: (context, index) {
