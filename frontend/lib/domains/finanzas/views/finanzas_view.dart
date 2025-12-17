@@ -42,7 +42,7 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
     if (mounted) {
       setState(() {
         listaHistorial = historial; // Historial (pestañas)
-        listaMensual = historial; // Mes actual (Inicio), le asiganmos el historial entero, y ya possteriormente nos encargaremos nmanualmente de filtrar por mes actual
+        listaMensual = historial; // Mes actual (Inicio), le asiganmos el historial entero, y ya posteriormente nos encargaremos nmanualmente de filtrar por mes actual
       });
     }
   }
@@ -62,14 +62,14 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
   double get totalIngresos {
     return listaMensual
         .where((m) => DateTime.parse(m['fecha']).month == mesActual && DateTime.parse(m['fecha']).year == annoActual) //filtra por mes actual
-        .where((m) => m['esGasto'] == false) //filtra por ingreso
+        .where((m) => m['esGasto'] == false)                                                                           //filtra por ingreso
         .fold(0.0, (sum, item) => sum + item['cantidad']); //fold -> acumular progresivamente la variable sum a partir del valor 0.0
   }
 
   double get totalGastos {
     return listaMensual
         .where((m) => DateTime.parse(m['fecha']).month == mesActual && DateTime.parse(m['fecha']).year == annoActual) //filtra por mes actual
-        .where((m) => m['esGasto'] == true) //filtra por gasto
+        .where((m) => m['esGasto'] == true)                                                                           //filtra por gasto
         .fold(0.0, (sum, item) => sum + item['cantidad']); //fold -> acumular progresivamente la variable sum a partir del valor 0.0
   }
 
@@ -88,15 +88,12 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
     return totalMovido > 0 ? totalIngresos / totalMovido : 0.0;
   }
 
-  //funcion para quitar los centimos cuando son 0
+  //funcion para quitar los centimos cuando son 00
   String _quitar00(double m) {
-    // Comprueba si el monto tiene decimales distintos de cero
-    if (m == m.truncateToDouble()) {
-      // Si la parte decimal es .00, muestra solo la parte entera.
-      return m.toInt().toString();
+    if (m == m.truncateToDouble()) { // Comprueba si tiene decimales distintos de cero, truncate le corta la parte decimal-> es 5.25 = 5?
+      return m.toInt().toString(); // Si la parte decimal es .00, muestra solo la parte entera.
     } else {
-      // Si hay decimales, muestra dos decimales
-      return m.toStringAsFixed(2);
+      return m.toStringAsFixed(2); // Si hay decimales, muestra dos decimales
     }
   }
 
@@ -161,7 +158,7 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-
+                              //************************************************
                               Center(                                      //MES
                                 child: Text(
                                   '$nombre_del_mes $annoActual',
@@ -169,6 +166,7 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                                 ),
                               ),
 
+                              //************************************************
 
                               Column(                                 //INGRESOS
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,17 +182,14 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                                     ],
                                   ),
                                   const SizedBox(height: 8),
-                                  LinearProgressIndicator(
-                                    value: valorIngresoBarra,
-                                    minHeight: 10,
-                                    backgroundColor: Colors.grey.shade300,
-                                    color: Colors.green,
-                                    borderRadius: BorderRadius.circular(5),
+
+                                  //Barra
+                                  LinearProgressIndicator(value: valorIngresoBarra, minHeight: 10, backgroundColor: Colors.grey.shade300, color: Colors.green, borderRadius: BorderRadius.circular(5),
                                   ),
                                 ],
                               ),
 
-
+                              //************************************************
 
                               Column(                                   //GASTOS
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -210,18 +205,18 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                                     ],
                                   ),
                                   const SizedBox(height: 8),
-                                  LinearProgressIndicator(
-                                    value: valorGastoBarra,
-                                    minHeight: 10,
-                                    backgroundColor: Colors.grey.shade300,
-                                    color: Colors.red,
-                                    borderRadius: BorderRadius.circular(5),
+
+                                  //Barra
+                                  LinearProgressIndicator(value: valorGastoBarra, minHeight: 10, backgroundColor: Colors.grey.shade300, color: Colors.red, borderRadius: BorderRadius.circular(5),
                                   ),
                                 ],
                               ),
 
+                              //************************************************
+
                               const Divider(thickness: 1),
-                              Center(
+
+                              Center(                                   //TOTAL
                                 child: Text(
                                   'Total: ${_quitar00(totalNeto)}€',
                                   style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
@@ -236,8 +231,9 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
 
                     const SizedBox(height: 16),
 
+                    //----------------------------------------------------------
 
-                    Expanded(     //Resumen
+                    Expanded(                                          //RESUMEN
                       flex: 1,
                       child: SizedBox.expand(
                         child: Card(
@@ -257,14 +253,14 @@ class _FinanzasViewState extends State<FinanzasView> with SelectionMixin{
                             child: const Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.bar_chart, size: 65, color: Colors.tealAccent),
+                                Icon(Icons.bar_chart, size: 65, color: Colors.black),
                                 SizedBox(height: 12),
                                 Text(
                                   'Resumen',
                                   style: TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.tealAccent
+                                      color: Colors.black
                                   ),
                                 ),
                               ],

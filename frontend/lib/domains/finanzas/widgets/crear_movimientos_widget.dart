@@ -42,12 +42,7 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
 
   // SELECCIONAR FECHA
   Future<void> _seleccionarFecha() async {
-    final DateTime? seleccion = await showDatePicker(
-      context: context,
-      initialDate: _fechaSeleccionada,
-      firstDate: DateTime(2020),
-      lastDate: DateTime(2030),
-    );
+    final DateTime? seleccion = await showDatePicker(context: context, initialDate: _fechaSeleccionada, firstDate: DateTime(2020), lastDate: DateTime(2030),);
 
     if (seleccion != null && seleccion != _fechaSeleccionada) {
       setState(() {
@@ -57,41 +52,6 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
   }
 
   // ------------------------------------
-
-  // GUARDAR
-  void _guardarMovimiento() {
-    setState(() {
-      _errorNombre = null;
-      _errorCantidad = null;
-    });
-    bool hayError = false;
-
-
-    if (_nombre.isEmpty) {  //NOMBRE NO VACIO
-      setState(() {
-        _errorNombre = "Introduce un nombre.";
-        hayError = true;
-      });
-    }
-
-    if (_cantidadStr.isEmpty) { //CANTIDAD NO VACIA
-      setState(() {
-        _errorCantidad = "Introduce la cantidad.";
-        hayError = true;
-      });
-    }
-    if (hayError) return;
-
-    final double? cantidadDouble = double.tryParse(_cantidadStr.replaceAll(',', '.'));  //CANTIDAD SEA NUMÉRICA, (se remplaza además cq coma por puntos)
-    if (cantidadDouble == null) {
-      setState(() {
-        _errorCantidad = "La cantidad debe ser un número.";
-      });
-    } else {
-      widget.onGuardar(_nombre, cantidadDouble, _fechaLaravel, _esGasto);
-      Navigator.pop(context);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,10 +67,7 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                ChoiceChip(
-                  label: const Text("Gasto"),
-                  selected: _esGasto == true,
-                  selectedColor: Colors.red,
+                ChoiceChip(label: const Text("Gasto"), selected: _esGasto == true, selectedColor: Colors.red,
                   onSelected: (selected) {
                     if (selected) {
                       setState(() => _esGasto = true);
@@ -118,10 +75,7 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
                   },
                 ),
                 const SizedBox(width: 10),
-                ChoiceChip(
-                  label: const Text("Ingreso"),
-                  selected: _esGasto == false,
-                  selectedColor: Colors.green,
+                ChoiceChip(label: const Text("Ingreso"), selected: _esGasto == false, selectedColor: Colors.green,
                   onSelected: (selected) {
                     if (selected) {
                       setState(() => _esGasto = false);
@@ -193,5 +147,42 @@ class _CrearMovimientoWidgetState extends State<CrearMovimientoWidget> {
 
       ],
     );
+  }
+
+  //----------------------------------------------------------------------------
+
+  // GUARDAR
+  void _guardarMovimiento() {
+    setState(() {
+      _errorNombre = null;
+      _errorCantidad = null;
+    });
+    bool hayError = false;
+
+
+    if (_nombre.isEmpty) {  //NOMBRE NO VACIO
+      setState(() {
+        _errorNombre = "Introduce un nombre.";
+        hayError = true;
+      });
+    }
+
+    if (_cantidadStr.isEmpty) { //CANTIDAD NO VACIA
+      setState(() {
+        _errorCantidad = "Introduce la cantidad.";
+        hayError = true;
+      });
+    }
+    if (hayError) return;
+
+    final double? cantidadDouble = double.tryParse(_cantidadStr.replaceAll(',', '.'));  //CANTIDAD SEA NUMÉRICA, (se remplaza además cq coma por puntos)
+    if (cantidadDouble == null) {
+      setState(() {
+        _errorCantidad = "La cantidad debe ser un número.";
+      });
+    } else {
+      widget.onGuardar(_nombre, cantidadDouble, _fechaLaravel, _esGasto);
+      Navigator.pop(context);
+    }
   }
 }

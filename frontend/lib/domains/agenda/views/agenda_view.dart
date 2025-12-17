@@ -25,7 +25,7 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
   DateTime _diaActual = DateTime.now();
   DateTime? _diaSeleccionado;
 
-  Map<DateTime, List<Map<String, dynamic>>> listaEventos = {};
+  Map<DateTime, List<Map<String, dynamic>>> listaEventos = {};    //map par buscar rapido en funcion del dia | todos los eventos q hay, no tien q ver con la pestaña eventos
 
   final _service = AgendaService();
 
@@ -58,33 +58,32 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
     super.initState();
     _cargarDatos();
 
-    final now = DateTime.now();         //inicializarlo para q en la pestaña calendario salgan los eventos del dia actual del tiron
-    _diaSeleccionado = DateTime.utc(now.year, now.month, now.day);
+    final now = DateTime.now();
+    _diaSeleccionado = DateTime.utc(now.year, now.month, now.day); //inicializarlo para q en la pestaña calendario salgan los eventos del dia actual del tiron
   }
 
   void _cargarDatos() async {
     final data = await _service.getEventos();
 
-    Map<DateTime, List<Map<String, dynamic>>> eventosTransformados = {};  //para agrupar los eventos ya con la fecha normaizada de mismo dia
+    Map<DateTime, List<Map<String, dynamic>>> eventosTransformados = {};  //para agrupar los eventos ya (BIEN) objeto DateTime con la fecha normalizada de mismo dia
 
     for (var item in data) {
       // 'YYYY-MM-DD' de Laravel -> objeto DateTime (fecha UTC)
-      DateTime fechaLaravel = DateTime.parse(item['fecha']).toUtc();
+      DateTime fechaLaravel = DateTime.parse(item['fecha']).toUtc();  //conversion +00:00:00.000
 
       // Normalizar la fecha (Quitar horas/minutos/segundos)
-      DateTime fechaClave = DateTime.utc(fechaLaravel.year, fechaLaravel.month, fechaLaravel.day);
+      DateTime fechaClave = DateTime.utc(fechaLaravel.year, fechaLaravel.month, fechaLaravel.day);    //queremos un objeto DateTime
 
-      //Crear el objeto
-      Map<String, dynamic> eventoObjeto = {
+      Map<String, dynamic> eventoObjeto = { //Crear el objeto
         'id': item['id'],
         'titulo': item['titulo']
       };
 
-      // los agrupa por dias
-      if (eventosTransformados[fechaClave] == null) {
-        eventosTransformados[fechaClave] = [eventoObjeto];
+      // los agrupa por dias -> Map usando fechaClave como clave y la lista(el map) de objetos objetoEvento como valor
+      if (eventosTransformados[fechaClave] == null) { //si no hay lista en ese dia
+        eventosTransformados[fechaClave] = [eventoObjeto];  //la creamos con el 1ro
       } else {
-        eventosTransformados[fechaClave]!.add(eventoObjeto);
+        eventosTransformados[fechaClave]!.add(eventoObjeto);  //como ya hay lista, añadimos los siguientes
       }
     }
 
@@ -150,24 +149,23 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
                         focusedDay: _diaActual,
                         calendarFormat: _formato,
 
-                        selectedDayPredicate: (day) {                 //detector
+                        selectedDayPredicate: (day) {     //detector: marcar con círculo el día que he tocado
                           return isSameDay(_diaSeleccionado, day);
                         },
-
-                        onDaySelected: (selectedDay, focusedDay) {  //capturador
+                        onDaySelected: (selectedDay, focusedDay) {  //capturador: guardar en una variable día pulsado para saber q eventos mostrar debajo
                           setState(() {
                             _diaSeleccionado = DateTime.utc(selectedDay.year, selectedDay.month, selectedDay.day);
                             _diaActual = focusedDay;
                           });
                         },
 
-                        onFormatChanged: (format) {
+                        onFormatChanged: (format) { //formato del calendario
                           setState(() {
                             _formato = format;
                           });
                         },
 
-                          eventLoader: _obtenerEventosPorDia,           //puntito
+                          eventLoader: _obtenerEventosPorDia,           //puntito: eventloader pinta el punto recorriendo todos los dias q hay y sacando el numero de puntos gracias a _obtenerEventosPorDia
                           calendarStyle: const CalendarStyle(
                             markerDecoration: BoxDecoration(
                               color: Colors.green,
@@ -176,36 +174,33 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
                           ),
                       ),
 
-
+                      //...................................
 
                       Builder(                                                  //EVENTOS POR DIA
                         builder: (context) {
-                          final eventosDelDia = _obtenerEventosDelDiaSeleccionado();
+                          final abajo = _obtenerEventosDelDiaSeleccionado();
 
-                          if (_diaSeleccionado == null || eventosDelDia.isEmpty) {
+                          if (_diaSeleccionado == null || abajo.isEmpty) { //no hay
                             return const Padding(
                               padding: EdgeInsets.only(left: 16.0, bottom: 16.0),
-
                             );
                           }
 
-                          return Column(
+                          return Column(  //si hay
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-
                               const Padding(
                                 padding: EdgeInsets.only(left: 16.0, top: 10.0, bottom: 5.0),
                                 child: Text("Eventos del Día:", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                               ),
 
 
-
                               ListView.builder(
                                 shrinkWrap: true,
                                 physics: const NeverScrollableScrollPhysics(),
-                                itemCount: eventosDelDia.length,
+                                itemCount: abajo.length,
                                 itemBuilder: (context, index) {
-                                  final evento = eventosDelDia[index];
+                                  final evento = abajo[index];
                                   return EventoCardWidget(
                                     titulo: evento['titulo'],
                                     fecha: evento['fechaString'],
@@ -229,7 +224,7 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
 
                 Builder(                                                        //EVENTOS
                     builder: (context) {
-                      final listaEventos = _obtenerEventosOrdenados();
+                      final listaEventos = _obtenerEventosOrdenados();  //tranforma el mapa en una lista
 
                       if (listaEventos.isEmpty) {
                         return const Center(
@@ -271,13 +266,15 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
 
   //----------------------------------------------------------------------------
 
-  List _obtenerEventosPorDia(DateTime day) {  //para saber si tiene que pintar el puntito
+  //NUMERO DE EVENTOS Q HAY EN EL DIA, PARA SABER CUANTOS PUNTOS PINTAR
+  List _obtenerEventosPorDia(DateTime day) {
     final dayKey = DateTime.utc(day.year, day.month, day.day);
     return listaEventos[dayKey] ?? [];
   }
 
   //----------------------------------------------------------------------------
 
+  //DEVOLVER LISTA CON LOS EVENTOS DEL DIA SELECCIONADO
   List<Map<String, dynamic>> _obtenerEventosDelDiaSeleccionado() {
     if (_diaSeleccionado == null) return [];
 
@@ -299,14 +296,19 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
 
   //----------------------------------------------------------------------------
 
+  //DEVUELVE LISTA ORDENADA CON LOS EVENTOS  A PARTIR DE HOY     (transforma el map listaEventos a list en le builder)
   List<Map<String, dynamic>> _obtenerEventosOrdenados() {
     List<Map<String, dynamic>> listaPlana = [];
 
-    listaEventos.forEach((fecha, eventos) {
+    final now = DateTime.now();
+    final hoy = DateTime.utc(now.year, now.month, now.day); //definimos esta variable para quitar los eventos que ya han pasado
+
+    listaEventos.forEach((fecha, eventos) {//2 variables del map
+      if (fecha.isBefore(hoy)) return; // Si la fecha del evento es anterior a hoy, NO LO METEMOS en la lista.
 
       for (var evento in eventos) {
 
-        Color colorAsignado = _getColor(evento['id']);
+        Color colorAsignado = _getColor(evento['id']);  //color
 
         listaPlana.add({
           'id': evento['id'],

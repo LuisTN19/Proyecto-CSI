@@ -7,17 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 class Habito extends Model
 {
     protected $table = 'Habito'; 
-    protected $fillable = [
+    protected $fillable = [ //lo q permito q se rellene desde fuera, proteger la aplicación contra vulnerabilidades de asignación Masiva
         'nombre', 
         'esCompletado', 
-        'user_id'
+        'user_id'   //pq el controlador teine que rellenarlo
     ];
-    protected $casts = [
+    protected $casts = [    //covertir automaticamente el dato de la variable al tipo con elq ue vamos a trabajar en php
         'esCompletado' => 'boolean',
     ];
 
 
-    // 💡 Una Usuario puede tener muchos habitos asociados.
+    //Un Usuario puede tener muchos habitos asociados
     public function user()
     {
         return $this->belongsTo(User::class);

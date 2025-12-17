@@ -22,7 +22,7 @@ Route::post('/registro', [AuthController::class, 'register']);
 Route::middleware('auth:sanctum')->group(function () {  //si abres esta ruta me tienes que enseñar la llave
     
     Route::get('/user', function (Request $request) {
-        return $request->user();
+        return $request->user();        //Al validar el token, Sanctum busca a qué usuario pertenece y lo "inyecta" dentro de la variable $request.
     });
 
     Route::get('/movimientos', [MovimientoController::class, 'index']);
@@ -58,7 +58,7 @@ Route::post('/cambiar-contraseña', function (Request $request) {
     // Buscamos al usuario manualmente primero
     $user = \App\Models\User::where('email', $request->email)->first();     //Si un hacker intenta poner en el campo de email algo como: ' OR 1=1 --, Laravel lo enviará como texto puro, no como código. La base de datos buscará literalmente un usuario cuyo email sea la frase "pepe' OR 1=1 --", no encontrará nada, y no pasará nada.
 
-    // Si no existe o no ha verificado el correo -> ERROR
+    // Si no existe o NO SE HA VERIFICADO EL CORREO -> ERROR
     if (! $user || ! $user->hasVerifiedEmail()) {
         return response()->json(['message' => 'El correo no existe o no está verificado.'], 400);
     }

@@ -14,27 +14,10 @@ class CrearHabitoWidget extends StatefulWidget {
 
 class _CrearHabitoWidgetState extends State<CrearHabitoWidget> {
 
-  String _nuevoNombre = "";
+  String _nombre = "";
+
   String? _errorNombre;
 
-  //----------------------------------------------------------------------------
-
-  void _guardarHabito() {
-    setState(() {
-      _errorNombre = null;
-    });
-
-    // 2. Validamos
-    if (_nuevoNombre.trim().isEmpty) {
-      setState(() {
-        _errorNombre = "Introduce el nombre del hábito.";
-      });
-      return;
-    }
-
-    widget.onGuardar(_nuevoNombre);
-    Navigator.pop(context);
-  }
 
   //----------------------------------------------------------------------------
 
@@ -44,39 +27,55 @@ class _CrearHabitoWidgetState extends State<CrearHabitoWidget> {
 
       title: const Text("Nuevo Hábito"),
 
-
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
-            autofocus: true,
+            autofocus: true,  //abrir teclado
             decoration: InputDecoration(
               labelText: "Nombre del hábito",
               border: const OutlineInputBorder(),
               errorText: _errorNombre,
             ),
             onChanged: (val) {
-              _nuevoNombre = val;
+              _nombre = val;
               if (_errorNombre != null) setState(() => _errorNombre = null);
             },
           ),
         ],
       ),
 
-
       actions: [
+        //Cancelar
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text("Cancelar"),
         ),
 
+        //Guardar
         ElevatedButton(
           onPressed: _guardarHabito,
           child: const Text("Guardar"),
         ),
       ],
-
-
     );
+  }
+
+  //----------------------------------------------------------------------------
+
+  void _guardarHabito() {
+    setState(() {
+      _errorNombre = null;
+    });
+
+    if (_nombre.trim().isEmpty) {  //si está vacío ->error
+      setState(() {
+        _errorNombre = "Introduce el nombre del hábito.";
+      });
+      return;
+    }
+
+    widget.onGuardar(_nombre);
+    Navigator.pop(context);
   }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('Movimiento', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('nombre', 150);
+            $table->string('nombre', 32);
             $table->decimal('cantidad', 10, 2);
             $table->date('fecha');
             $table->boolean('esGasto')->default(true);

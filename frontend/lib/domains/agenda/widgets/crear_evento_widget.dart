@@ -23,40 +23,16 @@ class CrearEventoDialog extends StatefulWidget {
 
 class _CrearEventoDialogState extends State<CrearEventoDialog>
 {
-  String _nuevoTitulo = "";
+  String _titulo = "";
   late DateTime _fechaEvento; // Se inicializará en initState
 
   String? _errorTitulo;
 
-  //----------------------------------------------------------------------------
 
   @override
   void initState() {
     super.initState();
-    // Inicializar la fecha con la que viene de la vista o la fecha actual
-    _fechaEvento = widget.initialDate ?? DateTime.now();
-  }
-
-  //  GUARDAR Y VALIDAR
-  void _guardarEvento() {
-    setState(() {
-      _errorTitulo = null;
-    });
-
-    if (_nuevoTitulo.trim().isEmpty) {
-      setState(() {
-        _errorTitulo = "Introduce el título del evento.";
-      });
-      return;
-    }
-
-    //Convertir la fecha al formato YYYY-MM-DD para Laravel
-    String fechaLaravel = "${_fechaEvento.year}-"
-        "${_fechaEvento.month.toString().padLeft(2, '0')}-"
-        "${_fechaEvento.day.toString().padLeft(2, '0')}";
-
-    widget.onGuardar(_nuevoTitulo, fechaLaravel);
-    Navigator.pop(context);
+    _fechaEvento = widget.initialDate ?? DateTime.now(); // Inicializar la fecha con la que viene de la vista o la fecha actual
   }
 
   //----------------------------------------------------------------------------
@@ -98,7 +74,7 @@ class _CrearEventoDialogState extends State<CrearEventoDialog>
               errorText: _errorTitulo,
             ),
             onChanged: (val) {
-              _nuevoTitulo = val;
+              _titulo = val;
 
               if (_errorTitulo != null) setState(() => _errorTitulo = null);
             },
@@ -134,5 +110,28 @@ class _CrearEventoDialogState extends State<CrearEventoDialog>
         ),
       ],
     );
+  }
+
+  //----------------------------------------------------------------------------
+
+  void _guardarEvento() {
+    setState(() {
+      _errorTitulo = null;
+    });
+
+    if (_titulo.trim().isEmpty) {
+      setState(() {
+        _errorTitulo = "Introduce el título del evento.";
+      });
+      return;
+    }
+
+    //Convertir la fecha al formato YYYY-MM-DD para Laravel
+    String fechaLaravel = "${_fechaEvento.year}-"
+        "${_fechaEvento.month.toString().padLeft(2, '0')}-"
+        "${_fechaEvento.day.toString().padLeft(2, '0')}";
+
+    widget.onGuardar(_titulo, fechaLaravel);
+    Navigator.pop(context);
   }
 }

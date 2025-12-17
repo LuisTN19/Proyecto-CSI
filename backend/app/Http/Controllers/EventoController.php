@@ -23,7 +23,7 @@ class EventoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'titulo' => 'required|string|max:255', 
+            'titulo' => 'required|string|max:32', 
             'fecha' => 'required|date',            
         ]);
 

@@ -26,6 +26,8 @@ class HabitosService {
         headers: _token(),
       );
 
+      //laravel
+
       if (respuesta.statusCode == 200) {
         List<dynamic> datos = jsonDecode(respuesta.body);
         return datos.map((item) {
@@ -35,6 +37,7 @@ class HabitosService {
             'esCompletado': item['esCompletado'] == 1 || item['esCompletado'] == true,
           };
         }).toList().cast<Map<String, dynamic>>();
+
       } else {
         print("Error ${respuesta.statusCode}: No autorizado o fallo");
         return [];
@@ -63,9 +66,9 @@ class HabitosService {
   //----------------------------------------------------------------------------
 
   // PUT
-  Future<bool> putHabito(int id, bool completadoActual) async {
+  Future<bool> putHabito(int id, bool estado) async {
     try {
-      final nuevoEstado = !completadoActual;
+      final nuevoEstado = !estado;    //le enviamos a laravel el dato modificado
 
       final respuesta = await http.put(
         Uri.parse('$_baseUrl/$id'),

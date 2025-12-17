@@ -26,6 +26,7 @@ class HabitosCardWidget extends StatelessWidget {
   Widget build(BuildContext contexto) {
 
     return Card(
+      //multiselección----------------------------------------------------------
       color: es_seleccionado ? Colors.blue.shade100 : null,
       elevation: 2,
 
@@ -38,16 +39,17 @@ class HabitosCardWidget extends StatelessWidget {
 
       margin: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 16.0),
 
-      child: InkWell(
+      child: InkWell( //responda al toque la card
         onTap: hay_seleccion_activa
             ? seleccionar
             : () {},
         onLongPress: seleccionar,
+        //----------------------------------------------------------------------
 
         borderRadius: BorderRadius.circular(12),
 
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 16.0),
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -56,7 +58,7 @@ class HabitosCardWidget extends StatelessWidget {
             Expanded(   //para que no sobresalga el tecxto por la pantalla y se ajusta a la cajita
               child: Text(
                   nombre,
-                  style: TextStyle(
+                  style: TextStyle(       //texto dependiendo de si esta completado o no
                     fontSize: 20,
                     color: esta_completado ? Colors.green : Colors.white,
                     decoration: esta_completado
@@ -70,12 +72,12 @@ class HabitosCardWidget extends StatelessWidget {
               es_seleccionado
                   ? const Icon(Icons.check_circle, color: Colors.blue, size: 30)
                   : IconButton(
-                icon: Icon(
-                  esta_completado ? Icons.check_circle : Icons.radio_button_unchecked,
-                  color: esta_completado ? Colors.green : Colors.white,
-                  size: 30,
-                ),
-                onPressed: al_pulsar_check,
+                      icon: Icon(
+                        esta_completado ? Icons.check_circle : Icons.radio_button_unchecked,
+                        color: esta_completado ? Colors.green : Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: al_pulsar_check,
               ),
             ],
           ),

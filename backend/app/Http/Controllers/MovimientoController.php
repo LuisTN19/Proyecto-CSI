@@ -26,14 +26,15 @@ class MovimientoController extends Controller
     {
         $userId = $request->user()->id;
 
-        $resumenMensual = Movimiento::select(
-            DB::raw('YEAR(fecha) as anno'), 
-            DB::raw('MONTH(fecha) as mes'),
-            DB::raw('SUM(CASE WHEN esGasto = 0 THEN cantidad ELSE 0 END) as total_ingresos'),
-            DB::raw('SUM(CASE WHEN esGasto = 1 THEN cantidad ELSE 0 END) as total_gastos')
+        //DB::raw sirve para inyectar fragmentos de SQL puro dentro de las consultas de Laravel
+        $resumenMensual = Movimiento::select(   //selección de datos
+            DB::raw('YEAR(fecha) as anno'), // Extrae el año
+            DB::raw('MONTH(fecha) as mes'), // Extrae el mes
+            DB::raw('SUM(CASE WHEN esGasto = 0 THEN cantidad ELSE 0 END) as total_ingresos'),   //suma lso ingresos
+            DB::raw('SUM(CASE WHEN esGasto = 1 THEN cantidad ELSE 0 END) as total_gastos')  //suma los gastsos
         )
         ->where('user_id', $userId) 
-        ->groupBy(DB::raw('YEAR(fecha)'), DB::raw('MONTH(fecha)')) 
+        ->groupBy(DB::raw('YEAR(fecha)'), DB::raw('MONTH(fecha)')) //agrupa por meses
         ->orderBy('anno', 'desc')
         ->orderBy('mes', 'desc')
         ->get();
@@ -46,7 +47,7 @@ class MovimientoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre'     => 'required|string|max:150',
+            'nombre'     => 'required|string|max:32',
             'cantidad'   => 'required|numeric|min:0', 
             'fecha'      => 'required|date_format:Y-m-d', // Formato de fecha esperado: YYYY-MM-DD
             'esGasto'   => 'required|boolean', 
@@ -62,7 +63,9 @@ class MovimientoController extends Controller
         return response()->json($movimiento, 201); 
     }
 
-        public function destroy($id)
+
+
+    public function destroy($id)
     {
         $movimiento = Movimiento::find($id);
 

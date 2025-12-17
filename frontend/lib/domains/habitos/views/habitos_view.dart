@@ -39,7 +39,7 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
     final data = await _service.getHabitos();
     if (mounted) {
       setState(() {
-        listaPorHacer = data.where((h) => h['esCompletado'] == false).toList();
+        listaPorHacer = data.where((h) => h['esCompletado'] == false).toList();   //where devuelve un iterable, con tolist lo podemos meter a la List
         listaCompletados = data.where((h) => h['esCompletado'] == true).toList();
       });
     }
@@ -101,12 +101,11 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
 
   //----------------------------------------------------------------------------
 
-  Widget _construirListaHabitos(List<Map<String, dynamic>> habitos, bool completado) {
+  Widget _construirListaHabitos(List<Map<String, dynamic>> habitos, bool estado) {
     if (habitos.isEmpty) {
       return const Center(
         child: Text(
-            "No hay hábitos en esta categoría.",
-            style: TextStyle(color: Colors.grey)
+            "No hay hábitos en esta categoría.", style: TextStyle(color: Colors.grey)
         ),
       );
     }
@@ -121,11 +120,11 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
 
         return HabitosCardWidget(
           nombre: habito['nombre'],
-          esta_completado: completado,
+          esta_completado: estado,
 
 
           al_pulsar_check: () {
-            _marcarCheck(id, completado);
+            _marcarCheck(id, estado);
           },
 
           // MULTISELECCION
@@ -178,16 +177,8 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
 
   //PUT
   void _marcarCheck(int id, bool estado) async {
-
-    bool exito = await _service.putHabito(id, estado);
-
-    if (exito) {
-      _cargarDatos();
-
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Hábito creado con éxito")));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error al guardar"), backgroundColor: Colors.red));
-    }
+    await _service.putHabito(id, estado);
+    _cargarDatos();
   }
 
   //----------------------------------------------------------------------------
@@ -202,8 +193,10 @@ class _HabitosViewState extends State<HabitosView> with SelectionMixin{
         content: Text("Se eliminarán ${seleccionados.length} hábitos permanentemente."),
 
         actions: [
+          //Cancelar
           TextButton(onPressed: () => Navigator.pop(context), child: const Text("Cancelar")),
 
+          //Borrar
           TextButton(
             onPressed: () async {
               Navigator.pop(dialogContext);

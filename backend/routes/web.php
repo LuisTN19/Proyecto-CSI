@@ -41,7 +41,7 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
 
 //CAMBIAR CONTRASEÑA-----------------------------------------------------------------------------------------------------------
 
-// GET: Muestra el formulario cuando hacen clic en el email
+// GET: Muestra el formulario cuando hacen clic en el email ->RESET-PASSWORD.BLADE
 Route::get('/reset-password/{token}', function ($token) {
     return view('reset-password', ['token' => $token]);
 })->middleware('guest')->name('password.reset'); //Este nombre es el que busca Laravel

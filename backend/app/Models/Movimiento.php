@@ -19,7 +19,7 @@ class Movimiento extends Model
     protected $casts = [
         'cantidad' => 'float',
         'esGasto' => 'boolean',
-        'fecha'    => 'date', // Asegura que se maneje como objeto Carbon
+        'fecha'    => 'date', // Asegura que se maneje como objeto Carbon, gracias a esto hacemos q la fecha se quede como YYYY-MM-DD
     ];
 
     public function user()

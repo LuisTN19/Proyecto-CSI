@@ -16,9 +16,7 @@ class Evento extends Model
         'user_id',
     ];
 
-    // 💡 Indica que el campo 'fecha' debe ser tratado como un objeto Carbon/DateTime.
-    // Esto es útil si quieres manipular la fecha en Laravel.
     protected $casts = [
-        'fecha' => 'date', 
+        'fecha' => 'date', //'fecha' debe ser tratado como un objeto Carbon/DateTime.
     ];
 }

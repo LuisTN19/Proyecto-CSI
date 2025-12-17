@@ -12,7 +12,7 @@ class FinanzasService {
   Map<String, String> _token() {
     return {
       'Accept': 'application/json',
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'Authorization': 'Bearer ${LoginService.apiToken}',
     };
   }
@@ -34,7 +34,7 @@ class FinanzasService {
           return {
             'id': item['id'],
             'nombre': item['nombre'],
-            'cantidad': (item['cantidad'] is String) ? double.parse(item['cantidad']) : item['cantidad'].toDouble(),
+            'cantidad': (item['cantidad'] as num).toDouble(), //Laravel promete enviar un número (casts), solo nos aseguramos de que sea Double
             'fecha': item['fecha'], // La fecha ya viene como string 'YYYY-MM-DD' de Laravel, que es lo que espera MovimientoCardWidget.
             'esGasto': item['esGasto'] == 1 || item['esGasto'] == true,
           };
@@ -78,12 +78,12 @@ class FinanzasService {
       final respuesta = await http.post(
         Uri.parse(_baseUrl),
         headers: _token(),
-        body: {
+        body: jsonEncode({
           'nombre': nombre,
-          'cantidad': cantidad.toStringAsFixed(2),
+          'cantidad': cantidad,
           'fecha': fecha,
           'esGasto': esGasto ? '1' : '0',
-        },
+        }),
       );
       return respuesta.statusCode == 201;
     } catch (e) {
