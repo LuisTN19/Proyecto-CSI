@@ -90,7 +90,7 @@ class MovimientoCardWidget extends StatelessWidget {
             // CENTRO: Título y Fecha
             title: Text(
               nombre,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
             ),
             subtitle: Text(fechaFormateada, style: TextStyle(color: Colors.grey.shade600)), // Usamos el getter
 

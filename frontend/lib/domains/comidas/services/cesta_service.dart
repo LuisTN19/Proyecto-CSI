@@ -10,7 +10,7 @@ class CestaService {
 
 
   //Ahora la lista guarda objetos con ID y Nombre, no solo texto : [{'id': 10, 'nombre': 'Leche'}, {'id': 11, 'nombre': 'Pan'}]
-  //static *memoria global) para que la pestaña de Platos y la de Cesta compartan la misma lista
+  //static (memoria global) para que la pestaña de Platos y la de Cesta compartan la misma lista
   static final ValueNotifier<List<Map<String, dynamic>>> itemsNotifier = ValueNotifier([]); //ValueNotifier para que la vista sepa cuándo repintarse
 
   Map<String, String> _token() {

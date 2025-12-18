@@ -69,9 +69,9 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
 
     for (var item in data) {
       // 'YYYY-MM-DD' de Laravel -> objeto DateTime (fecha UTC)
-      DateTime fechaLaravel = DateTime.parse(item['fecha']).toUtc();  //conversion +00:00:00.000
+      DateTime fechaLaravel = DateTime.parse(item['fecha']).toUtc();  //conversion +00:00:00.000 - ej: 2025-11-02 14:30:45.000Z
 
-      // Normalizar la fecha (Quitar horas/minutos/segundos)
+      // Normalizar la fecha (Quitar horas/minutos/segundos)                                      -ej: 2025-11-02 00:00:00.000Z
       DateTime fechaClave = DateTime.utc(fechaLaravel.year, fechaLaravel.month, fechaLaravel.day);    //queremos un objeto DateTime
 
       Map<String, dynamic> eventoObjeto = { //Crear el objeto
@@ -296,7 +296,7 @@ class _AgendaViewState extends State<AgendaView> with SelectionMixin{
 
   //----------------------------------------------------------------------------
 
-  //DEVUELVE LISTA ORDENADA CON LOS EVENTOS  A PARTIR DE HOY     (transforma el map listaEventos a list en le builder)
+  //DEVUELVE LISTA ORDENADA CON LOS EVENTOS  A PARTIR DE HOY     (transforma el map listaEventos a list en el builder)
   List<Map<String, dynamic>> _obtenerEventosOrdenados() {
     List<Map<String, dynamic>> listaPlana = [];
 

@@ -17,7 +17,7 @@ class MovimientoController extends Controller
         $userId = $request->user()->id;
 
         return Movimiento::where('user_id', $userId)
-                         ->orderBy('fecha', 'desc') // Ordenar es una buena práctica para listas
+                         ->orderBy('fecha', 'desc') // Ordenar, de MAYOR a MENOR, lo más reciente primero
                          ->get();
     }
 

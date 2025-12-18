@@ -27,16 +27,16 @@ class PlatoController extends Controller
 
         $datos = $request->all();   //hoja en sucio, vamos a modificar cosas aquí antes de guardarlas definitivamente
 
-        //Ingredientes
+        //Ingredientes en array PHP
         if ($request->has('ingredientes') && is_string($request->ingredientes)) { //multipart lo envia todo como texto y queremos lista. ANTES sin esto lo enviabamos todo como un bloque JSON (Content-Type: application/json), y laravel solo con esto $request->ingredientes ya lo ponia todo en php
-            $datos['ingredientes'] = json_decode($request->ingredientes, true); //lo convertimos ahora si a array PHP con el json_decode -> ['Pollo', 'Arroz']
+            $datos['ingredientes'] = json_decode($request->ingredientes, true); //lo convertimos ahora si a array PHP con el JSON_DECODE -> ['Pollo', 'Arroz']
                                                                                 //si no lo convirtieramos a array primero, por la propiedad del casts tendría q convertir lo q viene de ingredientes a json, puesto que cree que todo es un array como definimos en el contrato, y tendriamos un string dentro de un string: "\"['Pollo', 'Sal']\""
         }
 
-        //Foto
+        //Foto -> de archivo a URL accesible desde internet
         if ($request->hasFile('imagen')) {
-            $path = $request->file('imagen')->store('platos', 'public'); //genera un hash unico como nombre y lo guarda en el disco duro de tu servidor, dentro de la carpeta storage/app/public/platos.
-            $datos['imagenUrl'] = asset('storage/' . $path); //la base de datos no quiere saber dónde está el archivo en el disco duro, quiere saber la dirección web para que el móvil pueda descargarla, asset() convierte la ruta relativa en una URL completa accesible desde internet: Entra: storage/platos/foto.jpg Sale: http://192.168.1.170:8000/storage/platos/foto.jpg//la base de datos no quiere saber dónde está el archivo en el disco duro, quiere saber la dirección web para que el móvil pueda descargarla, asset() convierte la ruta relativa en una URL completa accesible desde internet: Entra: storage/platos/foto.jpg Sale: http://10.0.2.2:8000/storage/platos/foto.jpg
+            $path = $request->file('imagen')->store('platos', 'public'); //genera un hash unico como nombre y (RUTA) lo guarda en el disco duro de tu servidor, dentro de la carpeta storage/app/public/platos.
+            $datos['imagenUrl'] = asset('storage/' . $path); //la base de datos no quiere saber dónde está el archivo en el disco duro, quiere saber la dirección web para que el móvil pueda descargarla, asset() convierte la ruta relativa en una URL completa accesible desde internet: Entra: storage/platos/foto.jpg Sale: http://192.168.1.170:8000/storage/platos/foto.jpg
         } else {
             $datos['imagenUrl'] = null;
         }

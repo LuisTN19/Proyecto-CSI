@@ -45,6 +45,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
     _cestaService.getCesta();
   }
 
+  //GET
   void _cargarDatos() async {
     final datos = await _service.getPlatos();
     if (mounted) {
@@ -131,11 +132,6 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                             icon: Icon(Icons.swap_vert, color: Colors.white),
                             color: Colors.grey.shade800,
 
-                            onSelected: (Orden nuevoOrden) {
-                              _ordenActual = nuevoOrden;
-                              _aplicarBusqueda();
-                            },
-
                             itemBuilder: (context) => [
                               const PopupMenuItem(
                                 value: Orden.reciente,
@@ -150,6 +146,11 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
                                 child: Text("Mejor valorados", style: TextStyle(color: Colors.white)),
                               ),
                             ],
+
+                            onSelected: (Orden nuevoOrden) {
+                              _ordenActual = nuevoOrden;
+                              _aplicarBusqueda();
+                            },
                           ),
 
 
@@ -169,7 +170,7 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
 
                       Expanded(                                //LISTA DE PLATOS
                         child: _platosVisibles.isEmpty
-                            ? const Center( // 💡 SI LA LISTA ESTÁ VACÍA, MOSTRAMOS UN MENSAJE
+                            ? const Center( //SI LA LISTA ESTÁ VACÍA, MOSTRAMOS UN MENSAJE
                           child: Padding(
                             padding: EdgeInsets.all(20.0),
                             child: Text(
@@ -402,19 +403,18 @@ class _ComidasViewState extends State<ComidasView> with SelectionMixin{
   void _cambiarFavorito(int idPlato) async {  //Nunca poner index (posición) para modificar datos, siempre el ID del plato. El ID es único y no cambia aunque ordenes la lista mil veces.
     final int indexReal = listaPlatos.indexWhere((p) => p['id'] == idPlato);
 
-    if (indexReal != -1) {
-
-    }
+    if (indexReal != -1) { // si existe
       bool nuevoEstado = !listaPlatos[indexReal]['esFavorito'];
 
       setState(() {
-
         listaPlatos[indexReal]['esFavorito'] = nuevoEstado;
 
         _aplicarBusqueda();
       });
 
-    await _service.putFAV(idPlato, {'esFavorito': nuevoEstado});
+
+      await _service.putFAV(idPlato, {'esFavorito': nuevoEstado});
+    }
   }
 
   //----------------------------------------------------------------------------

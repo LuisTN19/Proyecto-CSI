@@ -14,6 +14,45 @@ Route::get('/', function () {
 });
 
 
+//CAMBIAR CONTRASEÑA-----------------------------------------------------------------------------------------------------------
+
+// GET: Muestra el formulario cuando hacen clic en el email ->RESET-PASSWORD.BLADE
+Route::get('/reset-password/{token}', function ($token) {
+    return view('reset-password', ['token' => $token]);
+})->middleware('guest')->name('password.reset'); //Este nombre es el que busca Laravel
+
+// POST: Procesa el cambio de contraseña
+Route::post('/reset-password', function (Request $request) {
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|min:8|confirmed',
+    ], [
+    // mensajes de errores en español
+    'password.required' => 'La contraseña es obligatoria.',
+    'password.min' => 'La contraseña debe tener al menos :min caracteres.', // :min se sustituye solo por el 8
+    'password.confirmed' => 'Las contraseñas no coinciden.',
+    ]);
+
+
+    $status = Password::reset(
+        $request->only('email', 'password', 'password_confirmation', 'token'),
+        function ($user, $password) {
+            $user->forceFill([
+                'password' => Hash::make($password)
+            ])->setRememberToken(Str::random(60));
+            $user->save();
+            event(new Illuminate\Auth\Events\PasswordReset($user));
+        }
+    );
+
+    return $status === Password::PASSWORD_RESET
+        ? "<h1>¡Contraseña cambiada!</h1><p>Ya puedes volver a la App e iniciar sesión.</p>"
+        : back()->withErrors(['email' => [__($status)]]);
+
+})->middleware('guest')->name('password.reset.submit');
+
+
 //VERIFICACIÓN DEL CORREO----------------------------------------------------------------------------------------------------------
 Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) {
     
@@ -37,39 +76,6 @@ Route::get('/email/verify/{id}/{hash}', function (Request $request, $id, $hash) 
     return "<h1>¡Correo Verificado!</h1><p>Ya puedes cerrar esta ventana y entrar en la App.</p>";
 
 })->name('verification.verify'); // Este nombre hace que Laravel use ESTA ruta en el email
-
-
-//CAMBIAR CONTRASEÑA-----------------------------------------------------------------------------------------------------------
-
-// GET: Muestra el formulario cuando hacen clic en el email ->RESET-PASSWORD.BLADE
-Route::get('/reset-password/{token}', function ($token) {
-    return view('reset-password', ['token' => $token]);
-})->middleware('guest')->name('password.reset'); //Este nombre es el que busca Laravel
-
-// POST: Procesa el cambio de contraseña
-Route::post('/reset-password', function (Request $request) {
-    $request->validate([
-        'token' => 'required',
-        'email' => 'required|email',
-        'password' => 'required|min:8|confirmed',
-    ]);
-
-    $status = Password::reset(
-        $request->only('email', 'password', 'password_confirmation', 'token'),
-        function ($user, $password) {
-            $user->forceFill([
-                'password' => Hash::make($password)
-            ])->setRememberToken(Str::random(60));
-            $user->save();
-            event(new Illuminate\Auth\Events\PasswordReset($user));
-        }
-    );
-
-    return $status === Password::PASSWORD_RESET
-        ? "<h1>¡Contraseña cambiada!</h1><p>Ya puedes volver a la App e iniciar sesión.</p>"
-        : back()->withErrors(['email' => [__($status)]]);
-
-})->middleware('guest')->name('password.update');
 
 
 //-----------------------------------------------------------------------------------------------------------------------------------

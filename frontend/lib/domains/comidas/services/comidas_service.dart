@@ -38,8 +38,8 @@ class ComidasService {
             'nombre': item['nombre'],
             'descripcion': item['descripcion'] ?? "",
 
-            'ingredientes': item['ingredientes'] != null    //laravel madará una lista de ingredientes
-                ? List<String>.from(item['ingredientes'])
+            'ingredientes': item['ingredientes'] != null
+                ? List<String>.from(item['ingredientes']) //los guardamos en una lista de string
                 : <String>[],
 
             'tiempo': item['tiempo'] ?? "",
@@ -78,13 +78,12 @@ class ComidasService {
       request.fields['calorias'] = calorias;
       request.fields['estrellas'] = estrellas.toString();
       request.fields['ingredientes'] = jsonEncode(ingredientes);  //tengo una lista ['Pollo', 'Arroz'], como la caja solo acepta texto, convertir a string usando jsonEncode -> "['Pollo', 'Arroz']"
-
       //archivo
       if (imagen != null) {
         request.files.add(await http.MultipartFile.fromPath('imagen', imagen.path));
       }
 
-      var streamedResponse = await request.send();
+      var streamedResponse = await request.send();          //envio de la peticion
       //laravel
       var response = await http.Response.fromStream(streamedResponse);
 

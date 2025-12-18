@@ -51,23 +51,4 @@ Route::middleware('auth:sanctum')->group(function () {  //si abres esta ruta me 
 });
 
 
-Route::post('/cambiar-contraseña', function (Request $request) {
-    
-    $request->validate(['email' => 'required|email']); // Validar email
-
-    // Buscamos al usuario manualmente primero
-    $user = \App\Models\User::where('email', $request->email)->first();     //Si un hacker intenta poner en el campo de email algo como: ' OR 1=1 --, Laravel lo enviará como texto puro, no como código. La base de datos buscará literalmente un usuario cuyo email sea la frase "pepe' OR 1=1 --", no encontrará nada, y no pasará nada.
-
-    // Si no existe o NO SE HA VERIFICADO EL CORREO -> ERROR
-    if (! $user || ! $user->hasVerifiedEmail()) {
-        return response()->json(['message' => 'El correo no existe o no está verificado.'], 400);
-    }
-    
-    $status = Password::sendResetLink($request->only('email')); // Enviar enlace
-
-    if ($status === Password::RESET_LINK_SENT) {    // Responder a Flutter
-        return response()->json(['message' => 'Correo enviado']);
-    }
-
-    return response()->json(['message' => 'Error al enviar'], 400);
-});
+Route::post('/cambiar-contraseña', [AuthController::class, 'cambiar']);

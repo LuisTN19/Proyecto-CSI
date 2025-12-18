@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <form method="POST" action="{{ url('/reset-password') }}">
+    <form method="POST" action="{{ route('password.reset.submit') }}">
         @csrf
         <h2 style="text-align:center">Nueva Contraseña</h2>
 
